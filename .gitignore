@@ -48,6 +48,6 @@ gradle-app.setting
 .checkstyle
 .pmd
 .ruleset
+
 .idea/
-*.iml
 out/
