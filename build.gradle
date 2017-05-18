@@ -46,28 +46,45 @@ dependencies {
     appengineSdk    "com.google.appengine:appengine-java-sdk:${appengineVersion}"
 
     compile         "com.google.appengine.tools:appengine-gcs-client:0.4.4",
+                    // AppEngine API, duplicate because of 1.9.27 name
                     "com.google.appengine:appengine-api-labs:${appengineVersion}",
                     "com.google.code.gson:gson:2.8.0",
                     "com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20160924.1",
                     "com.mailjet:mailjet-client:4.0.5",
                     "com.sendgrid:sendgrid-java:2.2.2",
+                    // mailgun
                     "com.sun.jersey:jersey-client:1.19.3",
-                    "com.sun.jersey:jersey-core:1.19.3",
+                    //"com.sun.jersey:jersey-core:1.19.3", // this is a transitive dependency of client
                     "com.sun.jersey.contribs:jersey-multipart:1.19.3",
+                    // Date-time classes before Java 8
                     "joda-time:joda-time:2.9.7",
+                    // Implementation of JSTL specification
                     "org.apache.taglibs:taglibs-standard-impl:1.2.5",
+                    // Parsing HTML
                     "org.jsoup:jsoup:1.10.2"
 
+                    // AppEngine API
     exclude         "com.google.appengine:appengine-api-1.0-sdk:${appengineVersion}",
+                    // AppEngine API, duplicate because of 1.9.27 name
                     "com.google.appengine:appengine-endpoints-deps:${appengineVersion}",
+                    // AppEngine API, duplicate of 1.9.27 name
                     "com.google.appengine:appengine-endpoints:${appengineVersion}",
+                    // AppEngine API
                     "com.google.appengine:appengine-jsr107cache:${appengineVersion}",
+                    // duplicate because SDK already has a final
                     "com.google.appengine.orm:datanucleus-appengine:1.0.10",
                     "javax.jdo:jdo2-api:2.3-eb",
+                    // Unused so should we should remove this?
+                    // though the jsr107cache from google requires this though
+                    // but it is not detected/specified by Google
                     "net.sf.jsr107cache:jsr107cache:1.1",
+                    // unused? already declared in datanucleus-jpa
                     "org.apache.geronimo.specs:geronimo-jpa_3.0_spec:1.1.1",
+                    // who uses this O.o?
                     "org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1.1",
+                    // AppEngine ORM
                     "org.datanucleus:datanucleus-core:1.1.5",
+                    // AppEngine ORM
                     "org.datanucleus:datanucleus-jpa:1.1.5",
                     "xerces:xercesImpl:2.11.0"
 
@@ -75,9 +92,13 @@ dependencies {
 
     enhancer        "javax.jdo:jdo2-api:2.3-eb",
                     "joda-time:joda-time:2.9.7",
+                    // specified in exclude already
                     "com.google.appengine.orm:datanucleus-appengine:1.0.10",
+                    // specified in exclude already
                     "org.datanucleus:datanucleus-core:1.1.5",
+                    // specified in exclude already
                     "org.datanucleus:datanucleus-jpa:1.1.5",
+                    // specified in exclude already
                     "com.google.appengine:appengine-api-1.0-sdk:${appengineVersion}"
 
     testCompile     "com.google.appengine:appengine-api-stubs:${appengineVersion}",
