@@ -1,0 +1,106 @@
+apply plugin: "eclipse"
+
+import org.gradle.plugins.ide.eclipse.model.SourceFolder
+
+eclipse {
+    project {
+        natures "org.eclipse.jdt.core.javanature", "com.google.appengine.eclipse.core.gaeNature", "org.eclipse.wst.jsdt.core.jsNature"
+        buildCommand "org.eclipse.jdt.core.javabuilder"
+        buildCommand "com.google.gdt.eclipse.core.webAppProjectValidator"
+        buildCommand "com.google.appengine.eclipse.core.enhancerbuilder"
+        buildCommand "com.google.appengine.eclipse.core.projectValidator"
+        buildCommand "org.eclipse.wst.validation.validationbuilder"
+    }
+    classpath {
+        containers "com.google.appengine.eclipse.core.GAE_CONTAINER/appengine-java-sdk-1.9.27"
+        defaultOutputDir = file("src/main/webapp/WEB-INF/classes")
+        sourceSets = [sourceSets.main, sourceSets.test]
+        minusConfigurations = [configurations.exclude, configurations.testExclude]
+        file {
+            whenMerged { cp ->
+                cp.entries.findAll {
+                    it instanceof SourceFolder && !it.path.startsWith("src/main/")
+                }*.output = "target/test-classes"
+
+                // Method to put mail.jar on top of the classpath
+                // This is necessary because placing it in its default place causes unintended name clash
+                def nonMailEntries = cp.entries.findAll{ entry ->
+                    !entry.path.contains("mail-1.4.7")
+                }
+                cp.entries.removeAll(nonMailEntries)
+                cp.entries.addAll(nonMailEntries)
+            }
+        }
+    }
+}
+
+eclipseProject {
+    onlyIf {
+        !(new File(".project")).exists()
+    }
+}
+
+eclipseClasspath {
+    onlyIf {
+        !(new File(".classpath")).exists()
+    }
+}
+
+task createEclipseLaunches << {
+    def templatesToCopy = [
+            ".templates/eclipseLaunches/All tests.launch.xml",
+            ".templates/eclipseLaunches/All tests (GodMode).launch.xml",
+            ".templates/eclipseLaunches/CI tests.launch.xml",
+            ".templates/eclipseLaunches/CI tests (GodMode).launch.xml",
+            ".templates/eclipseLaunches/Failed tests.launch.xml",
+            ".templates/eclipseLaunches/Failed tests (GodMode).launch.xml",
+            ".templates/eclipseLaunches/Local tests.launch.xml",
+            ".templates/eclipseLaunches/Local tests (GodMode).launch.xml"
+    ]
+    templatesToCopy.findAll {
+        !(new File(it.replace(".templates/eclipseLaunches", ".launches").replace(".xml", ""))).exists()
+    }.each {
+        filename -> copy {
+            from filename
+            into ".launches"
+            rename '(.*).xml', '$1'
+        }
+            filename = filename.replace(".templates/eclipseLaunches", ".launches").replace(".xml", "")
+            def fileContents = new File(filename).getText("UTF-8")
+            def projectName = "${projectDir}".replaceAll(/.*(\/|\\)/, "")
+            new File(filename).text = new File(filename).getText("UTF-8").replaceAll(/\$\{project\.name\}/, projectName)
+    }
+}
+
+task copyDepsToWebInfLib(type: Copy) {
+    from configurations.runtime
+    into "src/main/webapp/WEB-INF/lib/"
+    rename("datanucleus-appengine-1.0.10.jar", "datanucleus-appengine-1.0.10.final.jar")
+    rename("appengine-endpoints-deps-1.9.27.jar", "appengine-endpoints-deps.jar")
+    rename("appengine-endpoints-1.9.27.jar", "appengine-endpoints.jar")
+    rename("appengine-api-labs-1.9.27.jar", "appengine-api-labs.jar")
+}
+
+task resetEclipseDeps {
+    description "Updates the project's dependencies to be used by Eclipse configurations"
+    group "Setup"
+    doFirst {
+        delete  ".classpath",
+                "src/main/webapp/WEB-INF/lib"
+    }
+    finalizedBy eclipseClasspath, copyDepsToWebInfLib
+}
+
+
+task setupEclipse {
+    description "Sets up the Eclipse-specific configurations for the project."
+    group "Setup"
+    dependsOn eclipseProject, createEclipseLaunches, resetEclipseDeps
+}
+
+task removeDuplicateLibs(type: Delete) {
+    delete  "${buildDir}/exploded-app/WEB-INF/lib/datanucleus-appengine-1.0.10.final.jar",
+            "${buildDir}/exploded-app/WEB-INF/lib/appengine-endpoints-deps.jar",
+            "${buildDir}/exploded-app/WEB-INF/lib/appengine-endpoints.jar",
+            "${buildDir}/exploded-app/WEB-INF/lib/appengine-api-labs.jar"
+}
