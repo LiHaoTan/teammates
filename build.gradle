@@ -1,6 +1,9 @@
 apply plugin: "eclipse"
+apply plugin: 'idea'
+
 apply plugin: "war"
 apply plugin: "appengine"
+
 apply plugin: "checkstyle"
 apply plugin: "pmd"
 apply plugin: "findbugs"
@@ -140,6 +143,9 @@ sourceSets {
     }
 }
 
+sourceSets.remove(sourceSets.functionalTest) // TODO still some remnants, cleared from IDEA plugin above
+sourceSets.remove(sourceSets.endpointsSrc)
+
 // SETUP TASKS
 
 import org.gradle.plugins.ide.eclipse.model.SourceFolder
@@ -173,6 +179,46 @@ eclipse {
                 cp.entries.addAll(nonMailEntries)
             }
         }
+    }
+}
+
+idea {
+    module {
+        // TODO description Remove the sources from appengine plugin
+        testSourceDirs -= file('src/functionalTest/java')
+        testSourceDirs -= file('src/functionalTest/resources')
+        iml {
+            println "HEY I'm here"
+            //if you like to keep *.iml in a secret folder
+            //generateTo = file('secret-modules-folder')
+
+            //if you want to mess with the resulting XML in whatever way you fancy
+            withXml {
+                println "XML WHAT'S UP"
+                //println it.asString()
+                //def node = it.asNode()
+                node.appendNode('ihateGradle', 'true')
+                //node.appendNode('butAlso', 'I find increasing pleasure tinkering with output *.iml contents. Yeah!!!')
+            }
+
+            //closure executed after *.iml content is loaded from existing file
+            //but before gradle build information is merged
+            beforeMerged { module ->
+                //if you want skip merging exclude dirs
+                //module.excludeFolders.clear()
+                //println module.contentRoot.canonicalPath + "WHY"
+            }
+
+            //closure executed after *.iml content is loaded from existing file
+            //and after gradle build information is merged
+            whenMerged { module ->
+                println "Hi"
+                //you can tinker with Module
+            }
+        }
+        //name = 'some-better-name'
+        //outputDir = file("$buildDir/classes/mainlol/")
+        //testOutputDir = file("$buildDir/classes/testlolROFL/")
     }
 }
 
@@ -321,6 +367,12 @@ task removeDuplicateLibs(type: Delete) {
 
 appengineExplodeApp.finalizedBy removeDuplicateLibs
 
+task moveExplodedDir {
+    //file("${buildDir}/exploded-app").renameTo(file("${buildDir}/exploded-app2"))
+}
+//appengineExplodeApp.finalizedBy moveExplodedDir
+
+
 task enhancerRun << {
     def path = System.getProperty("java.class.path") + ":" + project.gradle.gradleUserHomeDir + "/appengine-sdk/appengine-java-sdk-${appengineVersion}/lib/appengine-tools-api.jar"
     ant.taskdef(name: "enhance", classpath: path, classname: "com.google.appengine.tools.enhancer.EnhancerTask")
@@ -331,6 +383,7 @@ task enhancerRun << {
             pathelement(path: project.configurations.enhancer.asPath)
         }
         fileset(dir: sourceSets.main.output.classesDir.canonicalPath, includes: "teammates/storage/entity/*.class")
+        // TODO be removed because we are not actually using JPA
         arg(value: "-enhancerVersion"); arg(value: "v1")
         arg(value: "-api"); arg(value: "JPA")
     }
@@ -453,7 +506,7 @@ def afterTestClosure = { descriptor, result ->
 }
 
 def checkConfigFailureClosure = { descriptor, result ->
-    if (result.exception instanceof org.gradle.messaging.remote.internal.PlaceholderException
+    if (result.exception instanceof org.gradle.internal.serialize.PlaceholderException
             && result.exception.toString().startsWith("org.gradle.api.internal.tasks.testing.TestSuiteExecutionException")) {
         throw new GradleException('Detected TestNG configuration failure - check src/test/testng-ci.xml')
     }
@@ -645,4 +698,186 @@ task jacocoReport(type: JacocoReport) {
         })
     }
     dependsOn jacocoMerge
+}
+
+// NEW TESTING TASKS
+
+task setupSourceSetTask {
+//    sourceSets.test.each {test ->
+//        test
+//    }
+    //sourceSets.remove(sourceSets.outputs)
+    println "Source Sets"
+    sourceSets.each {container ->
+        println container.name + "YO"
+    }
+
+    sourceSets.each { container ->
+        container.each { path ->
+            /*path.allSource.each { source ->
+                println source.canonicalPath + "Hey"
+            }*/
+            path.allSource.getSrcDirs().each { dirs ->
+                println dirs.canonicalPath + "Hey"
+            }
+        }
+    }
+    println "End source sets"
+    println "Build Dir: " + "${buildDir}"
+
+    println "War Dir: " + war.destinationDir.canonicalPath
+}
+
+task removeUnused {
+    //war.destinationDir = file("$buildDir/lmao/")
+    //sourceSets.remove(sourceSets.functionalTest) // TODO still some remnants, cleared from IDEA plugin above
+    //sourceSets.remove(sourceSets.endpointsSrc)
+    //sourceSets.remove(sourceSets.outputs)
+    //dependencies.
+}
+
+import groovy.xml.StreamingMarkupBuilder
+
+task resetIntelliJBaseModuleSettings {
+    // the settings of IntelliJ causes duplicate output, change it to match others
+    //println stream.getText()
+    def xml = new XmlParser().parse(".idea/modules/teammates.iml")
+
+    def moduleMainXml = new XmlParser().parse(".idea/modules/teammates_main.iml")
+    // breadth first search
+    def moduleMainRootComponent = moduleMainXml.'*'.find {it.@name == 'NewModuleRootManager'}
+    def outputUrl = moduleMainRootComponent.output.@url[0]
+    def moduleTestXml = new XmlParser().parse(".idea/modules/teammates_test.iml")
+    def moduleTestRootComponent = moduleTestXml.'*'.find {it.@name == 'NewModuleRootManager'}
+    def outputTestUrl = moduleTestRootComponent['output-test'].@url[0]
+
+    //http://stackoverflow.com/questions/7795494/how-to-add-xml-attribute-using-groovy
+    def node = xml.'*'.find {it.@name == 'NewModuleRootManager'}
+    //if (node.attribute('inherit-compiler-output')) {
+        node.attributes().remove('inherit-compiler-output')
+        def nodes = node.children()
+        def outputNode = new Node(null, 'output', [url: outputUrl])
+        nodes.add(0, new Node(null, 'output', [url: outputUrl]))
+        nodes.add(1, new Node(null, 'output-test', [url: outputTestUrl]))
+        if (node.output.size() >=  4) {
+            def nodeList = node.output
+            println node.output.size()
+            //node.children().each {
+            //    println it
+            //}
+            //def newNode = new Node(node, 'output', [url:"YOYO"])
+            //assert node.output instanceof groovy.util.NodeList
+            //assert node.output[node.output.size() - 1] instanceof groovy.util.Node
+            //node.remove(node.output[node.output.size() - 1])
+            while (node.output.size() > 1) {
+                node.remove(node.output[node.output.size() - 1])
+            }
+            while(node["output-test"].size() > 1) {
+                node.remove(node["output-test"][node["output-test"].size() - 1])
+            }
+
+            //while (node.output.size() > 2) {
+            //    node.remove(outputNode)
+            //}
+        }
+
+        //node.attributes()['inherit-compiler-output'] = 'false'
+        //println('yo1')
+
+        //XmlNodePrinter nodePrinter = new XmlNodePrinter(new PrintWriter(new FileWriter(xmlFile)))
+        //nodePrinter.setPreserveWhitespace(true)
+        //nodePrinter.printLineBegin()
+        //nodePrinter.printSimpleItem("HUALALOL")
+        //nodePrinter.printLineEnd()
+        //nodePrinter.print(xml)
+    //} else {
+        //node['output'][0].attributes().put('url', "HEHAHO")
+        //node['output'][0].attributes().put('url', outputUrl)
+        //node['output-test'][0].attributes().put('url', outputTestUrl)
+        //Node outputNode = node.appendNode('output')
+        //Node outputTestNode = node.appendNode('output-test')
+        //outputNode.attributes().put('url', 'file://$MODULE_DIR$/../../build/classes/mainLOLOLOL')
+        //outputTestNode.attributes().put('url', 'file://$MODULE_DIR$/../../build/classes/testLOLOLOL')
+        //node.attributes().put('inherit-compiler-output', 'false')
+        //println('yo2')
+    //}
+    //def xmlFile = ".idea/modules/teammates.iml"
+    //XmlNodePrinter nodePrinter = new XmlNodePrinter(new PrintWriter(new FileWriter(xmlFile)))
+    //nodePrinter.setPreserveWhitespace(true)
+    //nodePrinter.print(xml)
+    def xmlFile = ".idea/modules/teammates.iml"
+    new File(xmlFile).withWriter('UTF-8') { out ->
+        out << new StreamingMarkupBuilder().bind { mkp.xmlDeclaration() }
+        new XmlNodePrinter(new PrintWriter(out)).print(xml)
+    }
+}
+
+task copyTemp(type: Copy) {
+    from('.idea/modules/teammates.iml') {
+        rename {
+            return 'teammates_temp.iml'
+        }
+    }
+    into '.idea/modules'
+}
+
+task cleanUp(type: Delete) {
+    delete  '.idea/modules/teammates.iml'
+}
+
+task copyFiles(type: Copy) {
+    from('.idea/modules/teammates_temp.iml') {
+        rename {
+            return 'teammates.iml'
+        }
+    }
+    into '.idea/modules'
+    println 'Yea'
+}
+
+task cleanUpTemp(type: Delete) {
+    delete  '.idea/modules/teammates_temp.iml'
+}
+
+cleanUpTemp.dependsOn copyFiles
+copyFiles.dependsOn cleanUp
+cleanUp.dependsOn copyTemp
+copyTemp.dependsOn resetIntelliJBaseModuleSettings
+
+task cleanUpLol(type: Delete) {
+    delete  '.idea/modules/teammates.iml'
+}
+
+task copyLol(type: Copy) {
+    from('teammates_lolol.iml') {
+        rename {
+            return 'teammates.iml'
+        }
+    }
+    into '.idea/modules'
+}
+
+copyLol.dependsOn cleanUpLol
+
+//resetIntelliJBaseModuleSettings.dependsOn cleanUp, copyFiles
+
+task changeExplodedWarDirectory {
+    def xml = new XmlParser().parse(".idea/artifacts/Gradle___teammates_war__exploded_.xml")
+    def explodedWarArtifactNode = xml.'*'.find {it.@type == 'exploded-war'}
+    explodedWarArtifactNode["output-path"][0].value = '$PROJECT_DIR$/' + buildDir.name + '/exploded-app2'
+    def xmlFile = ".idea/artifacts/Gradle___teammates_war__exploded_.xml"
+    new File(xmlFile).withWriter('UTF-8') { out ->
+        def nodePrinter = new XmlNodePrinter(preserveWhitespace:true, new PrintWriter(out))
+        //nodePrinter.preserveWhitespace = true
+        nodePrinter.print(xml)
+    }
+}
+
+task setIntelliJAppEngineFacetSettings {
+    def moduleMainXml = new XmlParser().parse('.idea/modules/teammates_main.iml')
+    def moduleMainFacetComponent = moduleMainXml.'*'.find {it.@name == 'FacetManager'}
+}
+
+task setIntelliJBuildPath {
+    //buildDir = new File(rootProject.projectDir, 'buildIdea')
 }
