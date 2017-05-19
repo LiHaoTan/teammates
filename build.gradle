@@ -147,9 +147,6 @@ sourceSets {
     }
 }
 
-sourceSets.remove(sourceSets.functionalTest) // TODO still some remnants, cleared from IDEA plugin above
-sourceSets.remove(sourceSets.endpointsSrc)
-
 // SETUP TASKS
 
 import org.gradle.plugins.ide.eclipse.model.SourceFolder
@@ -188,43 +185,15 @@ eclipse {
 
 idea {
     module {
-        // TODO description Remove the sources from appengine plugin
-        testSourceDirs -= file('src/functionalTest/java')
-        testSourceDirs -= file('src/functionalTest/resources')
-        iml {
-            println "HEY I'm here"
-            //if you like to keep *.iml in a secret folder
-            //generateTo = file('secret-modules-folder')
-
-            //if you want to mess with the resulting XML in whatever way you fancy
-            withXml {
-                println "XML WHAT'S UP"
-                //println it.asString()
-                //def node = it.asNode()
-                node.appendNode('ihateGradle', 'true')
-                //node.appendNode('butAlso', 'I find increasing pleasure tinkering with output *.iml contents. Yeah!!!')
-            }
-
-            //closure executed after *.iml content is loaded from existing file
-            //but before gradle build information is merged
-            beforeMerged { module ->
-                //if you want skip merging exclude dirs
-                //module.excludeFolders.clear()
-                //println module.contentRoot.canonicalPath + "WHY"
-            }
-
-            //closure executed after *.iml content is loaded from existing file
-            //and after gradle build information is merged
-            whenMerged { module ->
-                println "Hi"
-                //you can tinker with Module
-            }
-        }
-        //name = 'some-better-name'
-        //outputDir = file("$buildDir/classes/mainlol/")
-        //testOutputDir = file("$buildDir/classes/testlolROFL/")
+        // Removes the source directories added by the appengine plugin
+        testSourceDirs -= sourceSets.functionalTest.allSource.srcDirs
     }
 }
+
+// removes unused sourceSets from the appengine plugin
+// the appengine plugin also adds source directories to the IDEA plugin, which are removed from the idea block above
+sourceSets.remove(sourceSets.functionalTest)
+sourceSets.remove(sourceSets.endpointsSrc)
 
 eclipseProject {
     onlyIf {
@@ -705,40 +674,6 @@ task jacocoReport(type: JacocoReport) {
 }
 
 // NEW TESTING TASKS
-
-task setupSourceSetTask {
-//    sourceSets.test.each {test ->
-//        test
-//    }
-    //sourceSets.remove(sourceSets.outputs)
-    println "Source Sets"
-    sourceSets.each {container ->
-        println container.name + "YO"
-    }
-
-    sourceSets.each { container ->
-        container.each { path ->
-            /*path.allSource.each { source ->
-                println source.canonicalPath + "Hey"
-            }*/
-            path.allSource.getSrcDirs().each { dirs ->
-                println dirs.canonicalPath + "Hey"
-            }
-        }
-    }
-    println "End source sets"
-    println "Build Dir: " + "${buildDir}"
-
-    println "War Dir: " + war.destinationDir.canonicalPath
-}
-
-task removeUnused {
-    //war.destinationDir = file("$buildDir/lmao/")
-    //sourceSets.remove(sourceSets.functionalTest) // TODO still some remnants, cleared from IDEA plugin above
-    //sourceSets.remove(sourceSets.endpointsSrc)
-    //sourceSets.remove(sourceSets.outputs)
-    //dependencies.
-}
 
 def intellijSetupGroup = 'IntelliJ Setup'
 
