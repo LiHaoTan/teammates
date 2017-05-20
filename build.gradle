@@ -809,6 +809,120 @@ task changeExplodedWarDirectoryToMatchAppEnginePlugin {
     }
 }
 
+task setupIntelliJGradleIntegrationSettings {
+    description 'Change the root module output paths and exploded war directory to match the settings in Gradle'
+    group intellijSetupGroup
+
+    dependsOn resetIntelliJRootModuleOutputPath, changeExplodedWarDirectoryToMatchAppEnginePlugin
+}
+
+def throwGradleExceptionUnexpectedSizeXml(task, currentNode, parentNode, size) {
+    throw new GradleException('[' + task +  '] ' + currentNode + ' size in ' + parentNode +
+            ' node not expected to be' + size)
+}
+
+def findComponent(xml, componentName, parentTaskName) {
+    def componentNode = xml.component.find { it.@name == componentName }
+    if (componentNode == null) {
+        throw new GradleException('[' + parentTaskName + ']' + componentName + ' node not found')
+    }
+
+    return componentNode
+}
+
+def getSystemNodeList(externalProjectsComponentNode, parentTaskName) {
+    def systemNodeList = externalProjectsComponentNode.system
+    if (systemNodeList.size() == 0) {
+        throw new GradleException('[' + parentTaskName + '] Cannot find system node in ExternalProjectsManager')
+    }
+
+    return systemNodeList
+}
+
+def findGradleSystemNode(systemNodeList, parentTaskName) {
+    def gradleSystemNode = systemNodeList.find { it.@id == 'GRADLE' }
+    if (gradleSystemNode == null) {
+        throw new GradleException('[' + parentTaskName + '] Cannot find GRADLE from system node(s)')
+    }
+
+    return gradleSystemNode
+}
+
+def getStateNode(gradleSystemNode, parentTaskName) {
+    def stateNodeList = gradleSystemNode.state
+    if (stateNodeList.size() != 1) {
+        throwGradleExceptionUnexpectedSizeXml(parentTaskName, 'state', 'system', stateNodeList.size())
+    }
+    def stateNode = stateNodeList[0]
+
+    return stateNode
+}
+
+task addIntelliJAfterSyncSettings {
+    group intellijSetupGroup
+    doLast {
+        def workspaceXmlFilePath = '.idea/workspace.xml'
+        def workspaceXml = new XmlParser().parse(workspaceXmlFilePath)
+
+        def externalProjectsComponentNode = findComponent(workspaceXml, 'ExternalProjectsManager', name)
+        def systemNodeList = getSystemNodeList(externalProjectsComponentNode, name)
+        def gradleSystemNode = findGradleSystemNode(systemNodeList, name)
+        def stateNode = getStateNode(gradleSystemNode, name)
+
+//    <task path="$PROJECT_DIR$">
+//    <activation>
+//    <after_sync>
+//    <task name="resetIntelliJRootModuleOutputPath" />
+//    </after_sync>
+//          </activation>
+//    </task>
+        def taskNodeList = stateNode.task
+
+        if (taskNodeList.size() > 1) {
+            throwGradleExceptionUnexpectedSizeXml(name, 'task', 'state', taskNodeList.size())
+        }
+
+        if (taskNodeList.size() == 0) {
+            println 'Add task node'
+
+        } else {
+            def activationNodeList = taskNodeList[0].activation
+            if (activationNodeList.size() != 1) {
+                throwGradleExceptionUnexpectedSizeXml(name, 'activation', 'state', activationNodeList.size())
+            }
+            def activationNode = activationNodeList[0]
+
+            def afterSyncNodeList = activationNode.after_sync
+            if (afterSyncNodeList.size() > 1) {
+                throwGradleExceptionUnexpectedSizeXml(name, 'after_sync', 'activation', afterSyncNodeList.size())
+                // throwUnexpectedNodeListSizeException
+            }
+
+            if (afterSyncNodeList.size() == 0) {
+                println 'No after sync'
+                activationNode.appendNode('after_sync')
+                activationNode.after_sync[0].appendNode('task', [name: 'setupIntelliJGradleIntegrationSettings'])
+            } else {
+                def afterSyncNode = afterSyncNodeList[0]
+                def taskNode = afterSyncNode.task.find {it.@name == 'setupIntelliJGradleIntegrationSettings'}
+                if (taskNode == null) {
+                    println 'We did not find you'
+                    afterSyncNode.appendNode('task', [name: 'setupIntelliJGradleIntegrationSettings'])
+                }
+            }
+        }
+
+        new File(workspaceXmlFilePath).withWriter('UTF-8') { out ->
+            out << new StreamingMarkupBuilder().bind { mkp.xmlDeclaration() }
+            def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(out))
+            xmlNodePrinter.preserveWhitespace = true
+            xmlNodePrinter.print(workspaceXml)
+        }
+    }
+
+    //println
+}
+
 task setIntelliJAppEngineFacetSettings {
     def moduleMainXml = new XmlParser().parse('.idea/modules/teammates_main.iml')
     def moduleMainFacetComponent = moduleMainXml.'*'.find {it.@name == 'FacetManager'}
