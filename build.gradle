@@ -947,9 +947,3 @@ task addIntelliJAfterSyncTask {
         }
     }
 }
-
-task setIntelliJAppEngineFacetSettings {
-    def moduleMainXml = new XmlParser().parse('.idea/modules/teammates_main.iml')
-    def moduleMainFacetComponent = moduleMainXml.'*'.find {it.@name == 'FacetManager'}
-}
-
