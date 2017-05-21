@@ -256,6 +256,215 @@ task createEclipseLaunches << {
     }
 }
 
+String intellijSetupGroup = 'IntelliJ IDEA Setup'
+
+import groovy.xml.StreamingMarkupBuilder
+
+task addAppEngineSdkHomePath(dependsOn: appengineDownloadSdk) {
+    group intellijSetupGroup
+    doLast {
+        String moduleXmlFilePath = '.idea/modules/teammates.iml'
+        Node moduleXml = new XmlParser().parse(moduleXmlFilePath)
+        Node facetComponent = (Node) (moduleXml.component.find { it.@name == 'FacetManager' })
+        Node googleAppEngineFacet = (Node) (facetComponent.find { it.@type == 'google-app-engine' })
+        Node configuration = googleAppEngineFacet.configuration[0]
+
+        NodeList sdkHomePathList = configuration.'sdk-home-path'
+        if (sdkHomePathList.size() > 1) {
+            throw new GradleException('More than one sdk-home-path found in Google App Engine Facet')
+        } else if (sdkHomePathList.size() == 1) {
+            configuration.'sdk-home-path'[0].value = System.properties['appengine.sdk.root']
+        } else {
+            List configurationChildren = configuration.children()
+            configurationChildren.add(0, new Node(null, 'sdk-home-path', null, System.properties['appengine.sdk.root']))
+        }
+
+        new File(moduleXmlFilePath).withWriter('UTF-8') { out ->
+            out << new StreamingMarkupBuilder().bind { mkp.xmlDeclaration() }
+            def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(out))
+            xmlNodePrinter.preserveWhitespace = true
+            xmlNodePrinter.print(moduleXml)
+        }
+    }
+}
+
+task copyIntelliJProjectSettings(type: Copy) {
+    group intellijSetupGroup
+    from '.templates/.idea'
+    into '.idea'
+}
+
+task setupIntellij {
+    description 'Sets up an IntelliJ project'
+    group intellijSetupGroup
+
+    dependsOn copyIntelliJProjectSettings
+    finalizedBy addAppEngineSdkHomePath
+}
+
+task includeExplodedWarProjectBuild {
+    description 'Include the exploded war in project build'
+    group intellijSetupGroup
+
+    doLast {
+        def explodedWarXmlFilePath = '.idea/artifacts/Gradle___teammates_war__exploded_.xml'
+        def explodedWarXml = new XmlParser().parse(explodedWarXmlFilePath)
+        def explodedWarArtifactNode = explodedWarXml.artifact.find { it.@type == 'exploded-war' }
+        LinkedHashMap<String, String> clonedAttributes = explodedWarArtifactNode.attributes().clone()
+
+        explodedWarArtifactNode.attributes().clear()
+        int i = 0
+        for (Map.Entry<String, String> entry : clonedAttributes.entrySet()) {
+            if (i == 1) {
+                explodedWarArtifactNode.attributes().put('build-on-make', 'true');
+            }
+            // do not use != because it may be confusing for Java developers
+            if (!entry.getKey().equals('build-on-make')) {
+                explodedWarArtifactNode.attributes().put(entry.getKey(), entry.getValue());
+            }
+            i++;
+        }
+
+        new File(explodedWarXmlFilePath).withWriter('UTF-8') { out ->
+            def nodePrinter = new XmlNodePrinter(new PrintWriter(out))
+            nodePrinter.preserveWhitespace = true
+            nodePrinter.print(explodedWarXml)
+        }
+    }
+}
+
+static void throwUnexpectedNodeListSizeException(String taskName, String currentNode, String parentNode, int size) {
+    throw new GradleException('[' + taskName +  '] ' + currentNode + ' size in ' + parentNode +
+            ' node not expected to be' + size)
+}
+
+static Node findComponent(Node xml, String componentName, String parentTaskName) {
+    Node componentNode = (Node)(xml.component.find { it.@name == componentName })
+    if (componentNode == null) {
+        throw new GradleException('[' + parentTaskName + ']' + componentName + ' node not found')
+    }
+
+    return componentNode
+}
+
+static NodeList getSystemNodeList(Node externalProjectsComponentNode, String parentTaskName) {
+    NodeList systemNodeList = externalProjectsComponentNode.system
+    if (systemNodeList.size() == 0) {
+        throw new GradleException('[' + parentTaskName + '] Cannot find system node in ExternalProjectsManager')
+    }
+
+    return systemNodeList
+}
+
+static Node findGradleSystemNode(NodeList systemNodeList, String parentTaskName) {
+    Node gradleSystemNode = (Node)(systemNodeList.find { it.@id == 'GRADLE' })
+    if (gradleSystemNode == null) {
+        throw new GradleException('[' + parentTaskName + '] Cannot find GRADLE from system node(s)')
+    }
+
+    return gradleSystemNode
+}
+
+static Node getStateNode(Node gradleSystemNode, String parentTaskName) {
+    NodeList stateNodeList = gradleSystemNode.state
+    if (stateNodeList.size() != 1) {
+        throwUnexpectedNodeListSizeException(parentTaskName, 'state', 'system', stateNodeList.size())
+    }
+    Node stateNode = (Node)(stateNodeList[0])
+
+    return stateNode
+}
+
+static NodeList getTaskPathNodeList(Node stateNode, String parentTaskName) {
+    NodeList taskPathNodeList = stateNode.task
+
+    if (taskPathNodeList.size() > 1) {
+        throwUnexpectedNodeListSizeException(parentTaskName, 'task', 'state', taskPathNodeList.size())
+    }
+
+    return taskPathNodeList
+}
+
+static Node getOrCreateTaskPathNode(NodeList taskPathNodeList, Node stateNode) {
+    if (taskPathNodeList.size() == 0) {
+        List stateNodeChildren = stateNode.children()
+        stateNodeChildren.add(0, new Node(null, 'task', [path: '$PROJECT_DIR$']))
+
+        NodeList newTaskPathNodeList = stateNode.task
+        Node taskPathNode = (Node)newTaskPathNodeList[0]
+
+        taskPathNode.appendNode('activation')
+
+        return taskPathNode
+    }
+
+    NodeList newTaskPathNodeList = taskPathNodeList
+    Node taskPathNode = (Node)newTaskPathNodeList[0]
+    return taskPathNode
+}
+
+static Node getActivationNode(Node taskPathNode, String parentTaskName) {
+    NodeList activationNodeList = taskPathNode.activation
+    if (activationNodeList.size() != 1) {
+        throwUnexpectedNodeListSizeException(parentTaskName, 'activation', 'state', activationNodeList.size())
+    }
+
+    return (Node)(activationNodeList[0])
+}
+
+static NodeList getAfterCompileNodeList(Node activationNode, String parentTaskName) {
+    NodeList afterSyncNodeList = activationNode.after_sync
+    if (afterSyncNodeList.size() > 1) {
+        throwUnexpectedNodeListSizeException(parentTaskName, 'after_compile', 'activation', afterSyncNodeList.size())
+    }
+
+    return afterSyncNodeList
+}
+
+task addIntelliJAfterBuildTask {
+    description 'Adds enhanceIntellijOutputClasses task to execute after build'
+    group intellijSetupGroup
+    doLast {
+        String workspaceXmlFilePath = '.idea/workspace.xml'
+        Node workspaceXml = new XmlParser().parse(workspaceXmlFilePath)
+
+        // these nodes must exist otherwise there is something wrong
+        Node externalProjectsComponentNode = findComponent(workspaceXml, 'ExternalProjectsManager', name)
+        NodeList systemNodeList = getSystemNodeList(externalProjectsComponentNode, name)
+        Node gradleSystemNode = findGradleSystemNode(systemNodeList, name)
+        Node stateNode = getStateNode(gradleSystemNode, name)
+
+        // if the user somehow messed with the gradle tool window, the task path node may exist
+        // otherwise we create it
+        NodeList taskPathNodeList = getTaskPathNodeList(stateNode, name)
+        Node taskPathNode = getOrCreateTaskPathNode(taskPathNodeList, stateNode)
+
+        Node activationNode = getActivationNode(taskPathNode, name)
+
+        NodeList afterCompileNodeList = getAfterCompileNodeList(activationNode, name)
+
+        // activation node may exist but there is no after_compile node, for example if they have a after_sync node
+        String afterBuildTask = 'enhanceIntellijOutputClasses'
+        if (afterCompileNodeList.size() == 0) {
+            activationNode.appendNode('after_compile')
+            activationNode.after_compile[0].appendNode('task', [name: afterBuildTask])
+        } else {
+            Node afterCompileNode = (Node)(afterCompileNodeList[0])
+            Node taskNode = (Node)(afterCompileNode.task.find {it.@name == afterBuildTask})
+            if (taskNode == null) {
+                afterCompileNode.appendNode('task', [name: afterBuildTask])
+            }
+        }
+
+        new File(workspaceXmlFilePath).withWriter('UTF-8') { out ->
+            out << new StreamingMarkupBuilder().bind { mkp.xmlDeclaration() }
+            def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(out))
+            xmlNodePrinter.preserveWhitespace = true
+            xmlNodePrinter.print(workspaceXml)
+        }
+    }
+}
+
 task createIntellijRunConfigs << {
     def templatesToCopy = [
         ".templates/intellijRunConfigs/All_Tests__Godmode_.xml",
@@ -304,12 +513,6 @@ task setupEclipse {
     description "Sets up the Eclipse-specific configurations for the project."
     group "Setup"
     dependsOn eclipseProject, createEclipseLaunches, resetEclipseDeps
-}
-
-task setupIntellij {
-    description "Sets up the IntelliJ-specific configurations for the project."
-    group "Setup"
-    dependsOn createIntellijRunConfigs
 }
 
 // RUN SERVER TASKS
@@ -363,6 +566,20 @@ enhancerRun.dependsOn appengineDownloadSdk
 enhancerRun.dependsOn project.classes
 enhancerRun.shouldRunAfter project.testClasses
 war.dependsOn enhancerRun
+
+task copyEnhancedClassesToExplodedWar(type: Copy) {
+    description 'Copy the enhanced classes to the exploded war'
+    group intellijSetupGroup
+
+    from sourceSets.main.output.classesDir.canonicalPath + '/teammates/storage/entity'
+    into war.destinationDir.canonicalPath + '/exploded/' + war.archiveName + '/WEB-INF/classes/teammates/storage/entity'
+}
+
+task enhanceIntellijOutputClasses(dependsOn: enhancerRun) {
+    description 'Enhance IntelliJ IDEA build output classes'
+    group intellijSetupGroup
+    finalizedBy copyEnhancedClassesToExplodedWar
+}
 
 // STATIC ANALYSIS TASKS
 
@@ -669,4 +886,3 @@ task jacocoReport(type: JacocoReport) {
     }
     dependsOn jacocoMerge
 }
-
