@@ -340,12 +340,6 @@ task removeDuplicateLibs(type: Delete) {
 
 appengineExplodeApp.finalizedBy removeDuplicateLibs
 
-task moveExplodedDir {
-    //file("${buildDir}/exploded-app").renameTo(file("${buildDir}/exploded-app2"))
-}
-//appengineExplodeApp.finalizedBy moveExplodedDir
-
-
 task enhancerRun << {
     def path = System.getProperty("java.class.path") + ":" + project.gradle.gradleUserHomeDir + "/appengine-sdk/appengine-java-sdk-${appengineVersion}/lib/appengine-tools-api.jar"
     ant.taskdef(name: "enhance", classpath: path, classname: "com.google.appengine.tools.enhancer.EnhancerTask")
