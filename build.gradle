@@ -294,7 +294,7 @@ task copyIntelliJProjectSettings(type: Copy) {
     into '.idea'
 }
 
-task setupIntellij {
+task setupIntellijProject {
     description 'Sets up an IntelliJ project'
     group intellijSetupGroup
 
@@ -432,6 +432,13 @@ task addIntelliJAfterBuildTask {
             xmlNodePrinter.print(workspaceXml)
         }
     }
+}
+
+task setupIntellijProjectSettings {
+    description 'Sets up settings in the IntelliJ project'
+    group intellijSetupGroup
+
+    dependsOn addIntelliJAfterBuildTask
 }
 
 task copyDepsToWebInfLib(type: Copy) {
