@@ -302,37 +302,6 @@ task setupIntellij {
     finalizedBy addAppEngineSdkHomePath
 }
 
-task includeExplodedWarProjectBuild {
-    description 'Include the exploded war in project build'
-    group intellijSetupGroup
-
-    doLast {
-        def explodedWarXmlFilePath = '.idea/artifacts/Gradle___teammates_war__exploded_.xml'
-        def explodedWarXml = new XmlParser().parse(explodedWarXmlFilePath)
-        def explodedWarArtifactNode = explodedWarXml.artifact.find { it.@type == 'exploded-war' }
-        LinkedHashMap<String, String> clonedAttributes = explodedWarArtifactNode.attributes().clone()
-
-        explodedWarArtifactNode.attributes().clear()
-        int i = 0
-        for (Map.Entry<String, String> entry : clonedAttributes.entrySet()) {
-            if (i == 1) {
-                explodedWarArtifactNode.attributes().put('build-on-make', 'true');
-            }
-            // do not use != because it may be confusing for Java developers
-            if (!entry.getKey().equals('build-on-make')) {
-                explodedWarArtifactNode.attributes().put(entry.getKey(), entry.getValue());
-            }
-            i++;
-        }
-
-        new File(explodedWarXmlFilePath).withWriter('UTF-8') { out ->
-            def nodePrinter = new XmlNodePrinter(new PrintWriter(out))
-            nodePrinter.preserveWhitespace = true
-            nodePrinter.print(explodedWarXml)
-        }
-    }
-}
-
 static void throwUnexpectedNodeListSizeException(String taskName, String currentNode, String parentNode, int size) {
     throw new GradleException('[' + taskName +  '] ' + currentNode + ' size in ' + parentNode +
             ' node not expected to be' + size)
@@ -461,27 +430,6 @@ task addIntelliJAfterBuildTask {
             def xmlNodePrinter = new XmlNodePrinter(new PrintWriter(out))
             xmlNodePrinter.preserveWhitespace = true
             xmlNodePrinter.print(workspaceXml)
-        }
-    }
-}
-
-task createIntellijRunConfigs << {
-    def templatesToCopy = [
-        ".templates/intellijRunConfigs/All_Tests__Godmode_.xml",
-        ".templates/intellijRunConfigs/All_Tests.xml",
-        ".templates/intellijRunConfigs/CI_Tests__Godmode_.xml",
-        ".templates/intellijRunConfigs/CI_Tests.xml",
-        ".templates/intellijRunConfigs/Failed_Tests__Godmode_.xml",
-        ".templates/intellijRunConfigs/Failed_Tests.xml",
-        ".templates/intellijRunConfigs/Local_Tests__Godmode_.xml",
-        ".templates/intellijRunConfigs/Local_Tests.xml"
-    ]
-    templatesToCopy.findAll {
-        !(new File(it.replace(".templates/intellijRunConfigs", ".idea/runConfigurations"))).exists()
-    }.each {
-        filename -> copy {
-            from filename
-            into ".idea/runConfigurations"
         }
     }
 }
