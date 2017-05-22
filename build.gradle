@@ -2,6 +2,12 @@ apply plugin: "eclipse"
 apply plugin: 'idea'
 
 apply plugin: "war"
+// Use a different buildDir for IntelliJ builds so they do not conflict with building with Gradle
+// Must be done before applying the appengine plugin as a discovery-docs folder
+// is added to WEB-INF which is added to the build
+if (System.properties['intellij'] == 'true') {
+    buildDir = new File(projectDir, 'buildIdea')
+}
 apply plugin: "appengine"
 
 apply plugin: "checkstyle"
@@ -14,9 +20,6 @@ def checkstyleVersion = "6.19"
 def pmdVersion = "5.5.4"
 def findbugsVersion = "3.0.1"
 
-if (System.properties['intellij'] == 'true') {
-    buildDir = new File(projectDir, 'buildIdea')
-}
 
 buildscript {
     repositories {
