@@ -192,4 +192,56 @@
         <error-code>500</error-code>
         <location>/errorPage.jsp</location>
     </error-page>
+     <error-page>
+        <error-code>500</error-code>
+        <location>/deadlineExceededErrorPage.jsp</location>
+    </error-page>
+    <servlet>
+        <servlet-name>LtiServlet</servlet-name>
+        <servlet-class>teammates.ui.controller.LtiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LtiServlet</servlet-name>
+        <url-pattern>/lti</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasServlet</servlet-name>
+        <servlet-class>teammates.ui.controller.CanvasServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasServlet</servlet-name>
+        <url-pattern>/canvas</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasAuthorization</servlet-name>
+        <servlet-class>teammates.ui.controller.CanvasAuthorizationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasAuthorization</servlet-name>
+        <url-pattern>/canvas-authorization</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasSuccess</servlet-name>
+        <jsp-file>/canvasSuccess.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasSuccess</servlet-name>
+        <url-pattern>/canvas-success</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasFail</servlet-name>
+        <jsp-file>/canvasFail.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasFail</servlet-name>
+        <url-pattern>/canvas-fail</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasLogout</servlet-name>
+        <servlet-class>teammates.ui.controller.CanvasLogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasLogout</servlet-name>
+        <url-pattern>/canvas-logout</url-pattern>
+    </servlet-mapping>
 </web-app>
