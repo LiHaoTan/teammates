@@ -79,7 +79,11 @@ dependencies {
                     "com.sun.jersey.contribs:jersey-multipart:1.19.4",
                     "org.apache.taglibs:taglibs-standard-impl:1.2.5",
                     "org.jsoup:jsoup:1.11.2",
-                    "org.imsglobal:basiclti-util:1.1.2"
+                    "org.imsglobal:basiclti-util:1.1.2",
+                    "org.apache.httpcomponents:httpcore:4.4.9",
+                    "org.apache.httpcomponents:httpclient:4.5.5",
+                    "org.apache.httpcomponents:httpmime:4.5.5"
+
 
     testAnnotationProcessor testng
 

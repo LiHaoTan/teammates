@@ -244,4 +244,12 @@
         <servlet-name>CanvasLogout</servlet-name>
         <url-pattern>/canvas-logout</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>CanvasUpload</servlet-name>
+        <servlet-class>teammates.ui.controller.CanvasUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CanvasUpload</servlet-name>
+        <url-pattern>/canvas-upload</url-pattern>
+    </servlet-mapping>
 </web-app>
