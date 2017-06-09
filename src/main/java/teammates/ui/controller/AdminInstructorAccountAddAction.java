@@ -1,10 +1,11 @@
 package teammates.ui.controller;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
-import java.util.TimeZone;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import teammates.common.datatransfer.DataBundle;
 import teammates.common.datatransfer.attributes.FeedbackResponseCommentAttributes;
@@ -42,7 +43,6 @@ public class AdminInstructorAccountAddAction extends Action {
         AdminHomePageData data = new AdminHomePageData(account, sessionToken);
 
         data.isInstructorAddingResultForAjax = true;
-        data.statusForAjax = "";
 
         // If there is input from the form in adminCreateInstructorAccountWithOneBoxForm.tag,
         // it will be prioritized over the data from the adminCreateInstructorAccountForm.tag
@@ -52,7 +52,7 @@ public class AdminInstructorAccountAddAction extends Action {
             try {
                 createInstructorDataFromOneBox(data);
             } catch (InvalidParametersException e) {
-                return createInstructorFailAjaxResult(data, e);
+                return createInstructorCreationFailAjaxResult(data, e);
             }
         } else {
             createInstructorDataFromMultiParameterAccountForm(data);
@@ -65,38 +65,15 @@ public class AdminInstructorAccountAddAction extends Action {
             logic.verifyInputForAdminHomePage(data.instructorShortName, data.instructorName,
                                               data.instructorInstitution, data.instructorEmail);
         } catch (InvalidParametersException e) {
-            return createInstructorFailAjaxResult(data, e);
+            return createInstructorCreationFailAjaxResult(data, e);
         }
 
-        String courseId = null;
+        String courseId;
 
         try {
             courseId = importDemoData(data);
         } catch (Exception e) {
-
-            String retryUrl = Const.ActionURIs.ADMIN_INSTRUCTORACCOUNT_ADD;
-            retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_SHORT_NAME, data.instructorShortName);
-            retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_NAME, data.instructorName);
-            retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_EMAIL, data.instructorEmail);
-            retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_INSTITUTION, data.instructorInstitution);
-            retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.SESSION_TOKEN, data.getSessionToken());
-
-            StringBuilder errorMessage = new StringBuilder(100);
-            String retryLink = "<a href=" + retryUrl + ">Exception in Importing Data, Retry</a>";
-            errorMessage.append(retryLink);
-
-            statusToUser.add(new StatusMessage(errorMessage.toString(), StatusMessageColor.DANGER));
-
-            String message = "<span class=\"text-danger\">Servlet Action failure in AdminInstructorAccountAddAction" + "<br>"
-                             + e.getClass() + ": " + TeammatesException.toStringWithStackTrace(e) + "<br></span>";
-
-            errorMessage.append("<br>").append(message);
-            statusToUser.add(new StatusMessage("<br>" + message, StatusMessageColor.DANGER));
-            statusToAdmin = message;
-
-            data.isInstructorAddingResultForAjax = false;
-            data.statusForAjax = errorMessage.toString();
-            return createAjaxResult(data);
+            return createInstructorImportRetryAjaxResult(data, e);
         }
 
         List<InstructorAttributes> instructorList = logic.getInstructorsForCourse(courseId);
@@ -111,8 +88,15 @@ public class AdminInstructorAccountAddAction extends Action {
         } catch (EmailSendingException e) {
             log.severe("Instructor welcome email failed to send: " + TeammatesException.toStringWithStackTrace(e));
         }
-        data.statusForAjax = "Instructor " + SanitizationHelper.sanitizeForHtml(data.instructorName)
-                             + " has been successfully created with join link:<br>" + joinLink;
+
+        data.statusForAjax = createInstructorCreationSuccessAjaxStatus(data, joinLink);
+
+        createInstructorCreationSuccessExecutionStatus(data);
+
+        return createAjaxResult(data);
+    }
+
+    private void createInstructorCreationSuccessExecutionStatus(AdminHomePageData data) {
         statusToUser.add(new StatusMessage(data.statusForAjax, StatusMessageColor.SUCCESS));
         statusToAdmin = "A New Instructor <span class=\"bold\">"
                 + SanitizationHelper.sanitizeForHtmlTag(data.instructorName) + "</span> has been created.<br>"
@@ -122,7 +106,39 @@ public class AdminInstructorAccountAddAction extends Action {
                 + "<span class=\"bold\">Email: </span>" + SanitizationHelper.sanitizeForHtmlTag(data.instructorEmail)
                 + "<span class=\"bold\">Institution: </span>"
                 + SanitizationHelper.sanitizeForHtmlTag(data.instructorInstitution);
+    }
 
+    private String createInstructorCreationSuccessAjaxStatus(AdminHomePageData data, String joinLink) {
+        return "Instructor " + SanitizationHelper.sanitizeForHtml(data.instructorName)
+                             + " has been successfully created with join link:<br>" + joinLink;
+    }
+
+    /**
+     * Creates an AJAX result with a link to retry import data failure
+     */
+    private ActionResult createInstructorImportRetryAjaxResult(AdminHomePageData data, Exception e) {
+        String retryUrl = Const.ActionURIs.ADMIN_INSTRUCTORACCOUNT_ADD;
+        retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_SHORT_NAME, data.instructorShortName);
+        retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_NAME, data.instructorName);
+        retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_EMAIL, data.instructorEmail);
+        retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.INSTRUCTOR_INSTITUTION, data.instructorInstitution);
+        retryUrl = Url.addParamToUrl(retryUrl, Const.ParamsNames.SESSION_TOKEN, data.getSessionToken());
+
+        StringBuilder errorMessage = new StringBuilder(100);
+        String retryLink = "<a href=" + retryUrl + ">Exception in Importing Data, Retry</a>";
+        errorMessage.append(retryLink);
+
+        statusToUser.add(new StatusMessage(errorMessage.toString(), StatusMessageColor.DANGER));
+
+        String message = "<span class=\"text-danger\">Servlet Action failure in AdminInstructorAccountAddAction" + "<br>"
+                         + e.getClass() + ": " + TeammatesException.toStringWithStackTrace(e) + "<br></span>";
+
+        errorMessage.append("<br>").append(message);
+        statusToUser.add(new StatusMessage("<br>" + message, StatusMessageColor.DANGER));
+        statusToAdmin = message;
+
+        data.isInstructorAddingResultForAjax = false;
+        data.statusForAjax = errorMessage.toString();
         return createAjaxResult(data);
     }
 
@@ -133,7 +149,7 @@ public class AdminInstructorAccountAddAction extends Action {
         data.instructorInstitution = data.instructorInstitution.trim();
     }
 
-    private ActionResult createInstructorFailAjaxResult(AdminHomePageData data, InvalidParametersException e) {
+    private ActionResult createInstructorCreationFailAjaxResult(AdminHomePageData data, InvalidParametersException e) {
         data.statusForAjax = e.getMessage().replace(Const.EOL, Const.HTML_BR_TAG);
         data.isInstructorAddingResultForAjax = false;
         statusToUser.add(new StatusMessage(data.statusForAjax, StatusMessageColor.DANGER));
@@ -158,7 +174,7 @@ public class AdminInstructorAccountAddAction extends Action {
 
     /**
      * Returns if the request has the instructor details on a single line, this should be sent from adminHome.es6
-     * recursively if there is more than one line
+     * recursively if there is more than one line.
      */
     private boolean hasInstructorDetailsSingleLineStringFromSingleBox() {
         // TODO this is not a good check as we actually have to retrieve the data
@@ -193,32 +209,21 @@ public class AdminInstructorAccountAddAction extends Action {
      */
     private String importDemoData(AdminHomePageData pageData)
             throws InvalidParametersException, EntityDoesNotExistException {
-
         String courseId = generateDemoCourseId(pageData.instructorEmail);
-        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        c.set(Calendar.AM_PM, Calendar.PM);
-        c.set(Calendar.HOUR, 11);
-        c.set(Calendar.MINUTE, 59);
-        c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm a Z");
 
-        String jsonString = Templates.populateTemplate(Templates.INSTRUCTOR_SAMPLE_DATA,
-                // replace email
-                "teammates.demo.instructor@demo.course", pageData.instructorEmail,
-                // replace name
-                "Demo_Instructor", pageData.instructorName,
-                // replace course
-                "demo.course", courseId,
-                // update feedback session time
-                "2013-04-01 11:59 PM UTC", formatter.format(c.getTime()));
+        DataBundle demoDataBundle = createDemoDataBundle(courseId, pageData);
 
-        DataBundle data = JsonUtils.fromJson(jsonString, DataBundle.class);
+        persistDataBundle(demoDataBundle);
 
-        // although BackDoorLogic is not for production use, it is more convenient to use it here, or should we not use
-        // it?
-        BackDoorLogic backDoorLogic = new BackDoorLogic();
-        backDoorLogic.persistDataBundle(data);
+        createAndPutDocuments(pageData, courseId);
 
+        return courseId;
+    }
+
+    /**
+     * Create and put documents for the demo data into the Index for use in App Engine's Search API
+     */
+    private void createAndPutDocuments(AdminHomePageData pageData, String courseId) {
         List<FeedbackResponseCommentAttributes> frComments =
                 logic.getFeedbackResponseCommentForGiver(courseId, pageData.instructorEmail);
         List<StudentAttributes> students = logic.getStudentsForCourse(courseId);
@@ -227,8 +232,31 @@ public class AdminInstructorAccountAddAction extends Action {
         logic.putFeedbackResponseCommentDocuments(frComments);
         logic.putStudentDocuments(students);
         logic.putInstructorDocuments(instructors);
+    }
 
-        return courseId;
+    private void persistDataBundle(DataBundle dataBundle) throws InvalidParametersException, EntityDoesNotExistException {
+        // although BackDoorLogic is not for production use, it is more convenient to use it here, or should we not use
+        // it?
+        BackDoorLogic backDoorLogic = new BackDoorLogic();
+        backDoorLogic.persistDataBundle(dataBundle);
+    }
+
+    private DataBundle createDemoDataBundle(String courseId, AdminHomePageData pageData) {
+        DateTime demoFeedbackSessionEndDateTime = new DateTime(DateTimeZone.UTC)
+                .withHourOfDay(23).withMinuteOfHour(59).plusYears(1);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm a z");
+
+        String demoDataBundleJsonString = Templates.populateTemplate(Templates.INSTRUCTOR_SAMPLE_DATA,
+                // replace email
+                "teammates.demo.instructor@demo.course", pageData.instructorEmail,
+                // replace name
+                "Demo_Instructor", pageData.instructorName,
+                // replace course
+                "demo.course", courseId,
+                // update feedback session time
+                "2013-04-01 11:59 PM UTC", demoFeedbackSessionEndDateTime.toString(dateTimeFormatter));
+
+        return JsonUtils.fromJson(demoDataBundleJsonString, DataBundle.class);
     }
 
     // Strategy to Generate New Demo Course Id:
