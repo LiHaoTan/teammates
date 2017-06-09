@@ -41,50 +41,31 @@ public class AdminInstructorAccountAddAction extends Action {
 
         AdminHomePageData data = new AdminHomePageData(account, sessionToken);
 
-        data.instructorDetailsSingleLine = getRequestParamValue(Const.ParamsNames.INSTRUCTOR_DETAILS_SINGLE_LINE);
-        data.instructorShortName = "";
-        data.instructorName = "";
-        data.instructorEmail = "";
-        data.instructorInstitution = "";
         data.isInstructorAddingResultForAjax = true;
         data.statusForAjax = "";
 
-        // If there is input from the instructorDetailsSingleLine form,
-        // that data will be prioritized over the data from the 3-parameter form
-        if (data.instructorDetailsSingleLine == null) {
-            data.instructorShortName = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_SHORT_NAME);
-            data.instructorName = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_NAME);
-            data.instructorEmail = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_EMAIL);
-            data.instructorInstitution = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_INSTITUTION);
-        } else {
+        // If there is input from the form in adminCreateInstructorAccountWithOneBoxForm.tag,
+        // it will be prioritized over the data from the adminCreateInstructorAccountForm.tag
+        if (hasInstructorDetailsSingleLineStringFromSingleBox()) {
+            // because it is sent line by line, not sure if this should be refactored
+            data.instructorDetailsSingleLine = getRequestParamValue(Const.ParamsNames.INSTRUCTOR_DETAILS_SINGLE_LINE);
             try {
-                String[] instructorInfo = extractInstructorInfo(data.instructorDetailsSingleLine);
-
-                data.instructorShortName = instructorInfo[0];
-                data.instructorName = instructorInfo[0];
-                data.instructorEmail = instructorInfo[1];
-                data.instructorInstitution = instructorInfo[2];
+                createInstructorDataFromOneBox(data);
             } catch (InvalidParametersException e) {
-                data.statusForAjax = e.getMessage().replace(Const.EOL, Const.HTML_BR_TAG);
-                data.isInstructorAddingResultForAjax = false;
-                statusToUser.add(new StatusMessage(data.statusForAjax, StatusMessageColor.DANGER));
-                return createAjaxResult(data);
+                return createInstructorFailAjaxResult(data, e);
             }
+        } else {
+            createInstructorDataFromMultiParameterAccountForm(data);
         }
 
-        data.instructorShortName = data.instructorShortName.trim();
-        data.instructorName = data.instructorName.trim();
-        data.instructorEmail = data.instructorEmail.trim();
-        data.instructorInstitution = data.instructorInstitution.trim();
+        trimInstructorData(data);
 
         try {
+            // TODO just pass the whole data?
             logic.verifyInputForAdminHomePage(data.instructorShortName, data.instructorName,
                                               data.instructorInstitution, data.instructorEmail);
         } catch (InvalidParametersException e) {
-            data.statusForAjax = e.getMessage().replace(Const.EOL, Const.HTML_BR_TAG);
-            data.isInstructorAddingResultForAjax = false;
-            statusToUser.add(new StatusMessage(data.statusForAjax, StatusMessageColor.DANGER));
-            return createAjaxResult(data);
+            return createInstructorFailAjaxResult(data, e);
         }
 
         String courseId = null;
@@ -145,6 +126,50 @@ public class AdminInstructorAccountAddAction extends Action {
         return createAjaxResult(data);
     }
 
+    private void trimInstructorData(AdminHomePageData data) {
+        data.instructorShortName = data.instructorShortName.trim();
+        data.instructorName = data.instructorName.trim();
+        data.instructorEmail = data.instructorEmail.trim();
+        data.instructorInstitution = data.instructorInstitution.trim();
+    }
+
+    private ActionResult createInstructorFailAjaxResult(AdminHomePageData data, InvalidParametersException e) {
+        data.statusForAjax = e.getMessage().replace(Const.EOL, Const.HTML_BR_TAG);
+        data.isInstructorAddingResultForAjax = false;
+        statusToUser.add(new StatusMessage(data.statusForAjax, StatusMessageColor.DANGER));
+        return createAjaxResult(data);
+    }
+
+    private void createInstructorDataFromMultiParameterAccountForm(AdminHomePageData data) {
+        data.instructorShortName = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_SHORT_NAME);
+        data.instructorName = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_NAME);
+        data.instructorEmail = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_EMAIL);
+        data.instructorInstitution = getNonNullRequestParamValue(Const.ParamsNames.INSTRUCTOR_INSTITUTION);
+    }
+
+    private void createInstructorDataFromOneBox(AdminHomePageData data) throws InvalidParametersException {
+        String[] instructorInfo = extractInstructorInfo(data.instructorDetailsSingleLine);
+
+        data.instructorShortName = instructorInfo[0];
+        data.instructorName = instructorInfo[0];
+        data.instructorEmail = instructorInfo[1];
+        data.instructorInstitution = instructorInfo[2];
+    }
+
+    /**
+     * Returns if the request has the instructor details on a single line, this should be sent from adminHome.es6
+     * recursively if there is more than one line
+     */
+    private boolean hasInstructorDetailsSingleLineStringFromSingleBox() {
+        // TODO this is not a good check as we actually have to retrieve the data
+        // in order to know if the data exists, and would result in
+        // the param value being retrieve twice, once here, and later again when we want the data
+        // However, some significant refactoring might be needed to be done if we were to need to do it another way
+        // of course we could also skip the boolean check and check it in another place, but it would not be clear that
+        // a null check means that the data is missing
+        return getRequestParamValue(Const.ParamsNames.INSTRUCTOR_DETAILS_SINGLE_LINE) != null;
+    }
+
     /**
      * Extracts instructor's info from a string then store them in an array of string.
      * @param instructorDetails
@@ -189,6 +214,8 @@ public class AdminInstructorAccountAddAction extends Action {
 
         DataBundle data = JsonUtils.fromJson(jsonString, DataBundle.class);
 
+        // although BackDoorLogic is not for production use, it is more convenient to use it here, or should we not use
+        // it?
         BackDoorLogic backDoorLogic = new BackDoorLogic();
         backDoorLogic.persistDataBundle(data);
 
