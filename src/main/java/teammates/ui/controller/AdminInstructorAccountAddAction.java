@@ -76,13 +76,21 @@ public class AdminInstructorAccountAddAction extends Action {
             return createInstructorImportRetryAjaxResult(data, e);
         }
 
-        List<InstructorAttributes> instructorList = logic.getInstructorsForCourse(courseId);
-        String joinLink = Config.getAppUrl(Const.ActionURIs.INSTRUCTOR_COURSE_JOIN)
-                                .withRegistrationKey(StringHelper.encrypt(instructorList.get(0).key))
-                                .withInstructorInstitution(data.instructorInstitution)
-                                .toAbsoluteString();
+        // TODO:
+        // one instructor per course should only exist, but this should be designed in the schema properly
+        // instead of getting a list
+        // if we never get around to refactoring this, we should have a method that retrieves the instructor only
+        // with the appropriate warnings
+        List<InstructorAttributes> instructorAttributesList = logic.getInstructorsForCourse(courseId);
+        final InstructorAttributes instructorAttributes = instructorAttributesList.get(0);
+
+        String joinLink = createJoinLinkFromInstructorRegKey(instructorAttributes.key, data.instructorInstitution);
+
         EmailWrapper email = new EmailGenerator().generateNewInstructorAccountJoinEmail(
-                instructorList.get(0).email, data.instructorShortName, joinLink);
+                instructorAttributes.email, data.instructorShortName, joinLink);
+
+        // TODO sending email takes up quite a lot of time, however this may not be of as much concern
+        // since there is only one admin though it should be sent to a queue instead
         try {
             emailSender.sendEmail(email);
         } catch (EmailSendingException e) {
@@ -94,6 +102,13 @@ public class AdminInstructorAccountAddAction extends Action {
         createInstructorCreationSuccessExecutionStatus(data);
 
         return createAjaxResult(data);
+    }
+
+    private String createJoinLinkFromInstructorRegKey(String instructorRegKey, String instructorInstitution) {
+        return Config.getAppUrl(Const.ActionURIs.INSTRUCTOR_COURSE_JOIN)
+                .withRegistrationKey(StringHelper.encrypt(instructorRegKey))
+                .withInstructorInstitution(instructorInstitution)
+                .toAbsoluteString();
     }
 
     private void createInstructorCreationSuccessExecutionStatus(AdminHomePageData data) {
