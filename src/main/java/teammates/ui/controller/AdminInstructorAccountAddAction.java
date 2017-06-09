@@ -29,11 +29,19 @@ import teammates.common.util.Templates;
 import teammates.common.util.Url;
 import teammates.logic.api.EmailGenerator;
 import teammates.logic.backdoor.BackDoorLogic;
+import teammates.logic.core.AdminAddInstructorLogic;
 import teammates.ui.pagedata.AdminHomePageData;
 
 public class AdminInstructorAccountAddAction extends Action {
 
     private static final Logger log = Logger.getLogger();
+
+    // TODO Actions only use the Logic class which is a facade to every single *Logic class
+    // not sure if it is such a great idea because it cause the Facade class to be so huge and not every class
+    // needs everything in it, the upside is that the classes at least do not have direct coupling with the different
+    // *Logic classes, perhaps it is probably better for each class to use the Logic classes they require though
+    // like how different *Logic classes uses other *Logic classes
+    private static final AdminAddInstructorLogic adminAddInstructorLogic = AdminAddInstructorLogic.inst();
 
     @Override
     protected ActionResult execute() {
@@ -42,7 +50,7 @@ public class AdminInstructorAccountAddAction extends Action {
 
         AdminHomePageData data = new AdminHomePageData(account, sessionToken);
 
-        data.isInstructorAddingResultForAjax = true;
+        // TODO START1 maybe create a whole method around this
 
         // If there is input from the form in adminCreateInstructorAccountWithOneBoxForm.tag,
         // it will be prioritized over the data from the adminCreateInstructorAccountForm.tag
@@ -59,6 +67,8 @@ public class AdminInstructorAccountAddAction extends Action {
         }
 
         trimInstructorData(data);
+
+        // END1 end here
 
         try {
             // TODO just pass the whole data?
@@ -97,6 +107,7 @@ public class AdminInstructorAccountAddAction extends Action {
             log.severe("Instructor welcome email failed to send: " + TeammatesException.toStringWithStackTrace(e));
         }
 
+        data.isInstructorAddingResultForAjax = true;
         data.statusForAjax = createInstructorCreationSuccessAjaxStatus(data, joinLink);
 
         createInstructorCreationSuccessExecutionStatus(data);
