@@ -1078,13 +1078,6 @@ public class Logic {
     }
 
     /**
-     * Batch creates or updates search documents for the given students.
-     */
-    public void putStudentDocuments(List<StudentAttributes> students) {
-        studentsLogic.putDocuments(students);
-    }
-
-    /**
      * Generates students list of a course in CSV format. <br>
      * Preconditions: <br>
      * * All parameters are non-null. <br>
@@ -1913,14 +1906,6 @@ public class Logic {
         return feedbackResponseCommentsLogic.getFeedbackResponseComment(feedbackResponseCommentId);
     }
 
-    public List<FeedbackResponseCommentAttributes> getFeedbackResponseCommentForGiver(String courseId,
-                                                                                      String giverEmail) {
-        Assumption.assertNotNull(courseId);
-        Assumption.assertNotNull(giverEmail);
-
-        return feedbackResponseCommentsLogic.getFeedbackResponseCommentsForGiver(courseId, giverEmail);
-    }
-
     /**
      * Preconditions: <br>
      * * All parameters are non-null.
@@ -1941,15 +1926,6 @@ public class Logic {
      */
     public void putDocument(FeedbackResponseCommentAttributes comment) {
         feedbackResponseCommentsLogic.putDocument(comment);
-    }
-
-    /**
-     * Batch creates or updates documents for the given comments.
-     *
-     * @see FeedbackResponseCommentsLogic#putDocuments(List)
-     */
-    public void putFeedbackResponseCommentDocuments(List<FeedbackResponseCommentAttributes> comments) {
-        feedbackResponseCommentsLogic.putDocuments(comments);
     }
 
     /**
