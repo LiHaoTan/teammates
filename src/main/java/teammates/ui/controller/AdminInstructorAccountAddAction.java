@@ -60,6 +60,10 @@ public class AdminInstructorAccountAddAction extends Action {
             try {
                 createInstructorDataFromOneBox(data);
             } catch (InvalidParametersException e) {
+                data.instructorShortName = "";
+                data.instructorName = "";
+                data.instructorEmail = "";
+                data.instructorInstitution = "";
                 return createInstructorCreationFailAjaxResult(data, e);
             }
         } else {
