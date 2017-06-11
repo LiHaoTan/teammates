@@ -83,6 +83,7 @@ public class LtiServlet extends HttpServlet {
             if (INSTITUTION_ROLE_INSTRUCTOR_HANDLE.equalsIgnoreCase(role)
                     || INSTITUTION_ROLE_INSTRUCTOR_URN.equalsIgnoreCase(role)) {
                 log.info("INSTRUCTOR FOUND!");
+                resp.sendRedirect("/ltiInstructorCreate");
             }
         }
 
