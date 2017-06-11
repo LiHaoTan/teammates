@@ -60,6 +60,7 @@ public class AdminInstructorAccountAddAction extends Action {
             try {
                 createInstructorDataFromOneBox(data);
             } catch (InvalidParametersException e) {
+                // TODO do we need this?, maybe should put into the method
                 data.instructorShortName = "";
                 data.instructorName = "";
                 data.instructorEmail = "";
