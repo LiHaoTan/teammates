@@ -205,6 +205,14 @@
         <url-pattern>/lti</url-pattern>
     </servlet-mapping>
     <servlet>
+        <servlet-name>LtiCreateInstructorServlet</servlet-name>
+        <servlet-class>teammates.ui.controller.LtiCreateInstructorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LtiCreateInstructorServlet</servlet-name>
+        <url-pattern>/ltiInstructorCreate</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>CanvasServlet</servlet-name>
         <servlet-class>teammates.ui.controller.CanvasServlet</servlet-class>
     </servlet>

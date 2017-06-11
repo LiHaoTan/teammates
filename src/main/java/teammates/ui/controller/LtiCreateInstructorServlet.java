@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,7 +58,14 @@ public class LtiCreateInstructorServlet extends HttpServlet {
         // since we handle in another servlet we should do some checks again, which means we probably might not want to
         // be in another servlet actually as there is no point creating another request
 
-        String instructorName = req.getParameter("lis_person_name_full");
+        try {
+            req.getRequestDispatcher("/jsp/LtiInstructorCreate.jsp").forward(req, resp);
+        } catch (ServletException e) {
+            resp.getWriter().println("Instructor Create redirect fail");
+            return;
+        }
+
+/*        String instructorName = req.getParameter("lis_person_name_full");
         // note that you can contact your administrator for your details to be automatically filled
 
         // do a check if all the parameters are there, if it is not we make the user fill in a form
@@ -103,21 +111,22 @@ public class LtiCreateInstructorServlet extends HttpServlet {
             // to double check the spec if it is case sensitive, but it probably isn't
             if (INSTITUTION_ROLE_ADMIN_HANDLE.equalsIgnoreCase(role)
                     || INSTITUTION_ROLE_ADMIN_URN.equalsIgnoreCase(role)) {
-                log.info("ADMIN FOUND! we might want to give them the option of doing something admin like or let" +
-                        "them create instructor account");
+                log.info("ADMIN FOUND! we might want to give them the option of doing something admin like or let"
+                        + "them create instructor account");
             }
             if (INSTITUTION_ROLE_INSTRUCTOR_HANDLE.equalsIgnoreCase(role)
                     || INSTITUTION_ROLE_INSTRUCTOR_URN.equalsIgnoreCase(role)) {
                 log.info("INSTRUCTOR FOUND!");
             }
-        }
+        }*/
 
         //handleOutcomes(req, out);
 
         //handleLaunchPresentationReturn(req, resp, out);
     }
 
-    private void handleLaunchPresentationReturn(HttpServletRequest req, HttpServletResponse resp, PrintWriter out) throws IOException {
+    private void handleLaunchPresentationReturn(HttpServletRequest req, HttpServletResponse resp, PrintWriter out)
+            throws IOException {
         final String launchPresentationReturnUrlParam = req.getParameter(LAUNCH_PRESENTATION_RETURN_URL);
         if (launchPresentationReturnUrlParam != null) {
             try {
