@@ -13,7 +13,8 @@
     </blti:custom>
     <blti:extensions platform="canvas.instructure.com">
         <lticm:property name="tool_id">teammates</lticm:property>
-        <lticm:property name="privacy_level">anonymous</lticm:property>
+        <!-- to further modify using https://www.eduappcenter.com/ -->
+        <lticm:property name="privacy_level">public</lticm:property>
         <lticm:options name="editor_button">
             <lticm:property name="enabled">true</lticm:property>
             <lticm:property name="url">http://www.example.com/undesirables/2</lticm:property>

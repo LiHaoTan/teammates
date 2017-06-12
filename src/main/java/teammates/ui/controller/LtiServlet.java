@@ -56,6 +56,17 @@ public class LtiServlet extends HttpServlet {
         //Redirect the user
         PrintWriter out = resp.getWriter();
 
+        out.println("Printing parameters<br>");
+
+        Map<String, String[]> parameterMap = req.getParameterMap();
+
+        for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+            out.println("Parameter name: " + entry.getKey() + "<br>");
+            for (String value : entry.getValue()) {
+                out.println("Parameter value: " + value + "<br>");
+            }
+        }
+
         logParameters(req, out);
 
         LtiVerificationResult verificationResult = verifyOAuth(req, out);
@@ -77,13 +88,13 @@ public class LtiServlet extends HttpServlet {
             // to double check the spec if it is case sensitive, but it probably isn't
             if (INSTITUTION_ROLE_ADMIN_HANDLE.equalsIgnoreCase(role)
                     || INSTITUTION_ROLE_ADMIN_URN.equalsIgnoreCase(role)) {
-                log.info("ADMIN FOUND! we might want to give them the option of doing something admin like or let" +
-                        "them create instructor account");
+                log.info("ADMIN FOUND! we might want to give them the option of doing something admin like or let"
+                        + "them create instructor account");
             }
             if (INSTITUTION_ROLE_INSTRUCTOR_HANDLE.equalsIgnoreCase(role)
                     || INSTITUTION_ROLE_INSTRUCTOR_URN.equalsIgnoreCase(role)) {
                 log.info("INSTRUCTOR FOUND!");
-                resp.sendRedirect("/ltiInstructorCreate");
+                //resp.sendRedirect("/ltiInstructorCreate");
             }
         }
 
@@ -92,7 +103,8 @@ public class LtiServlet extends HttpServlet {
         //handleLaunchPresentationReturn(req, resp, out);
     }
 
-    private void handleLaunchPresentationReturn(HttpServletRequest req, HttpServletResponse resp, PrintWriter out) throws IOException {
+    private void handleLaunchPresentationReturn(HttpServletRequest req, HttpServletResponse resp, PrintWriter out)
+            throws IOException {
         final String launchPresentationReturnUrlParam = req.getParameter(LAUNCH_PRESENTATION_RETURN_URL);
         if (launchPresentationReturnUrlParam != null) {
             try {
