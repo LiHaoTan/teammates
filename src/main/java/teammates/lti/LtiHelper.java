@@ -10,11 +10,11 @@ public class LtiHelper {
      * Key.
      */
     //public static String secret = generateSecret();
-    public static String key = "7488e962c2a330543e71a26d0a17bd24";
+    public static String key = "255d4a7bfa0eccc8bd3ef59c5d20ca59783cd5ec";
     /**
      * Secret.
      */
-    public static String secret = "d072fa6998fd7d4282cd14892f65d24b";
+    public static String secret = "c0137f3a895fad1ef38ddda89727e8305d77347a";
 
     private static SecureRandom secureRandom = new SecureRandom();
 
