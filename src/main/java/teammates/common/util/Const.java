@@ -840,6 +840,8 @@ public final class Const {
 
         public static final String SEARCH_STUDENTS = "searchstudents";
         public static final String SEARCH_COMMENTS_FOR_RESPONSES = "searchcommentforresponses";
+
+        public static final String LTI_CREDENTIALS_CONSUMER_KEY = "consumerkey";
     }
 
     public static class SearchIndex {
@@ -972,6 +974,8 @@ public final class Const {
         public static final String ADMIN_EMAIL_LOG_PAGE = "/admin/adminEmailLogPage";
         public static final String ADMIN_HOME_PAGE = "/admin/adminHomePage";
         public static final String ADMIN_INSTRUCTORACCOUNT_ADD = "/admin/adminInstructorAccountAdd";
+        public static final String ADMIN_LTI_CREDENTIALS_PAGE = "/admin/adminLtiCredentials";
+        public static final String ADMIN_LTI_CREDENTIALS_ADD = "/admin/adminLtiCredentialsAdd";
         public static final String ADMIN_ACCOUNT_MANAGEMENT_PAGE = "/admin/adminAccountManagementPage";
         public static final String ADMIN_ACCOUNT_DETAILS_PAGE = "/admin/adminAccountDetailsPage";
         public static final String ADMIN_ACCOUNT_DELETE = "/admin/adminAccountDelete";
@@ -1119,6 +1123,7 @@ public final class Const {
         public static final String STUDENT_PROFILE_PAGE = "/jsp/studentProfilePage.jsp";
 
         public static final String ADMIN_HOME = "/jsp/adminHome.jsp";
+        public static final String ADMIN_LTI_CREDENTIALS = "/jsp/adminLtiCredentials.jsp";
         public static final String ADMIN_ACCOUNT_MANAGEMENT = "/jsp/adminAccountManagement.jsp";
         public static final String ADMIN_SEARCH = "/jsp/adminSearch.jsp";
         public static final String ADMIN_EMAIL = "/jsp/adminEmail.jsp";

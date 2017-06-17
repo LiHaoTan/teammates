@@ -23,6 +23,8 @@ public class ActionFactory {
 
     static {
         map(ADMIN_HOME_PAGE, AdminHomePageAction.class);
+        map(ADMIN_LTI_CREDENTIALS_PAGE, AdminLtiCredentialsPageAction.class);
+        map(ADMIN_LTI_CREDENTIALS_ADD, AdminLtiCredentialsGenerateAction.class);
         map(ADMIN_ACCOUNT_DELETE, AdminAccountDeleteAction.class);
         map(ADMIN_ACTIVITY_LOG_PAGE, AdminActivityLogPageAction.class);
         map(ADMIN_ACCOUNT_DETAILS_PAGE, AdminAccountDetailsPageAction.class);
