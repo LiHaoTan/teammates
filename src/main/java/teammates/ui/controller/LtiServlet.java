@@ -20,6 +20,7 @@ import org.imsglobal.pox.IMSPOXRequest;
 
 import teammates.common.util.Logger;
 import teammates.lti.LtiHelper;
+import teammates.storage.api.LtiOAuthCredentialDb;
 
 import oauth.signpost.exception.OAuthException;
 
@@ -144,7 +145,9 @@ public class LtiServlet extends HttpServlet {
     private LtiVerificationResult verifyOAuth(HttpServletRequest req, PrintWriter out) {
         LtiVerifier ltiVerifier = new LtiOauthVerifier();
         String key = req.getParameter("oauth_consumer_key");
+        final LtiOAuthCredentialDb ltiOAuthCredentialDb = new LtiOAuthCredentialDb();
         String secret = LtiHelper.secret; // get secret from key
+        secret = ltiOAuthCredentialDb.getCredential(key).getConsumerSecret();
 
         LtiVerificationResult ltiResult;
         try {

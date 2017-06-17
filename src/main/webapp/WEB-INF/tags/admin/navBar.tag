@@ -22,6 +22,9 @@
         <li <c:if test="${fn:contains(data.getClass(), 'AdminHomePage')}">class="active"</c:if>>
           <a href="<%=Const.ActionURIs.ADMIN_HOME_PAGE%>">Create Instructor</a>
         </li>
+        <li <c:if test="${fn:contains(data.getClass(), 'AdminLtiCredentials')}">class="active"</c:if>>
+          <a href="<%=Const.ActionURIs.ADMIN_LTI_CREDENTIALS_PAGE%>">LTI Credentials</a>
+        </li>
 
         <!-- The link to Account Management Page will be hidden until it's scalable.
         <li <c:if test="${fn:contains(data.getClass(), 'AdminAccountManagementPage')}">class="active"</c:if>>
