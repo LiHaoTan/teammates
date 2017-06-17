@@ -18,13 +18,4 @@ public class LtiHelper {
 
     private static SecureRandom secureRandom = new SecureRandom();
 
-    /**
-     * Generate secret temp.
-     */
-    public static String generateSecret() {
-        byte[] bytes = new byte[16];
-        secureRandom.nextBytes(bytes);
-        return new String(bytes);
-    }
-
 }
