@@ -18,6 +18,7 @@ import org.imsglobal.lti.launch.LtiVerificationResult;
 import org.imsglobal.lti.launch.LtiVerifier;
 import org.imsglobal.pox.IMSPOXRequest;
 
+import teammates.common.datatransfer.attributes.LtiOAuthCredentialAttributes;
 import teammates.common.util.Logger;
 import teammates.lti.LtiHelper;
 import teammates.storage.api.LtiOAuthCredentialDb;
@@ -145,9 +146,18 @@ public class LtiServlet extends HttpServlet {
     private LtiVerificationResult verifyOAuth(HttpServletRequest req, PrintWriter out) {
         LtiVerifier ltiVerifier = new LtiOauthVerifier();
         String key = req.getParameter("oauth_consumer_key");
+
+        if (key == null) {
+            return null;
+        }
+
         final LtiOAuthCredentialDb ltiOAuthCredentialDb = new LtiOAuthCredentialDb();
-        String secret = LtiHelper.secret; // get secret from key
-        secret = ltiOAuthCredentialDb.getCredential(key).getConsumerSecret();
+        final LtiOAuthCredentialAttributes credential = ltiOAuthCredentialDb.getCredential(key);
+        if (credential == null) {
+            return null;
+        }
+
+        String secret = credential.getConsumerSecret();
 
         LtiVerificationResult ltiResult;
         try {
