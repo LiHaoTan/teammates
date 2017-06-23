@@ -5,10 +5,7 @@
 <%@ taglib tagdir="/WEB-INF/tags/admin/home" prefix="adminHome" %>
 
 <c:set var="jsIncludes">
-    <script type="text/javascript" src="/js/administrator.js"></script>
-    <script type="text/javascript" src="/js/crypto.js"></script>
     <script type="text/javascript" src="/js/adminHome.js"></script>
-    <!-- we need a new js, and replace the onclick below -->
 </c:set>
 
 <ta:adminPage bodyTitle="Add New Instructor Test" pageTitle="TEAMMATES - Lti Test" jsIncludes="${jsIncludes}">
