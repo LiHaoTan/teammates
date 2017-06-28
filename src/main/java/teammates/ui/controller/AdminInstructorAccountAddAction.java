@@ -73,7 +73,7 @@ public class AdminInstructorAccountAddAction extends Action {
         String courseId;
 
         try {
-            courseId = adminAddInstructorLogic.createDemoDataForCourseInstructor(data);
+            courseId = adminAddInstructorLogic.createInstructorWithDemoData(data.instructorEmail, data.instructorName);
         } catch (Exception e) {
             return createInstructorImportRetryAjaxResult(data, e);
         }
