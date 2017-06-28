@@ -19,7 +19,6 @@ import teammates.common.util.Logger;
 import teammates.common.util.StringHelper;
 import teammates.common.util.Templates;
 import teammates.logic.backdoor.BackDoorLogic;
-import teammates.ui.pagedata.AdminHomePageData;
 
 /**
  * Handles operations related to adding instructors.
@@ -49,18 +48,17 @@ public final class AdminAddInstructorLogic {
 
     /**
      * Imports Demo course to new instructor.
-     * @param pageData data from AdminHomePageData
      * @return the ID of Demo course
      */
-    public String createDemoDataForCourseInstructor(AdminHomePageData pageData)
+    public String createInstructorWithDemoData(String instructorEmail, String instructorName)
             throws InvalidParametersException, EntityDoesNotExistException {
-        String courseId = generateDemoCourseId(pageData.instructorEmail);
+        String courseId = generateDemoCourseId(instructorEmail);
 
-        DataBundle demoDataBundle = createDemoDataBundle(courseId, pageData);
+        DataBundle demoDataBundle = createDemoDataBundle(courseId, instructorEmail, instructorName);
 
         new BackDoorLogic().persistDataBundle(demoDataBundle);
 
-        createAndPutDocuments(pageData, courseId);
+        createAndPutDocuments(courseId, instructorEmail);
 
         return courseId;
     }
@@ -92,6 +90,7 @@ public final class AdminAddInstructorLogic {
      *         <li>lebron@gmail.com -> lebron.gma-demo</li>
      *         <li>lebron.gma-demo -> lebron.gma-demo0</li>
      *         <li>lebron.gma-demo0 -> lebron.gma-demo1</li>
+     *         TODO documentation seems to be wrong here, should be cut from front not in the center
      *         <li>012345678901234567890123456789.gma-demo9 -> 01234567890123456789012345678.gma-demo10 (being cut)</li>
      *         </ul>
      */
@@ -110,6 +109,7 @@ public final class AdminAddInstructorLogic {
 
         final int lastIndexOfDemo = instructorEmailOrProposedCourseId.lastIndexOf("-demo");
         final String root = instructorEmailOrProposedCourseId.substring(0, lastIndexOfDemo);
+        // TODO should not use the magic number 5 here
         final int previousDedupSuffix = Integer.parseInt(instructorEmailOrProposedCourseId.substring(lastIndexOfDemo + 5));
 
         return StringHelper.truncateHead(root + "-demo" + (previousDedupSuffix + 1), maximumIdLength);
@@ -133,16 +133,16 @@ public final class AdminAddInstructorLogic {
         return head + "." + hostAbbreviation + "-demo";
     }
 
-    private DataBundle createDemoDataBundle(String courseId, AdminHomePageData pageData) {
+    private DataBundle createDemoDataBundle(String courseId, String instructorEmail, String instructorName) {
         DateTime demoFeedbackSessionEndDateTime = new DateTime(DateTimeZone.UTC)
                 .withHourOfDay(23).withMinuteOfHour(59).plusYears(1);
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm a z");
 
         String demoDataBundleJsonString = Templates.populateTemplate(Templates.INSTRUCTOR_SAMPLE_DATA,
                 // replace email
-                "teammates.demo.instructor@demo.course", pageData.instructorEmail,
+                "teammates.demo.instructor@demo.course", instructorEmail,
                 // replace name
-                "Demo_Instructor", pageData.instructorName,
+                "Demo_Instructor", instructorName,
                 // replace course
                 "demo.course", courseId,
                 // update feedback session time
@@ -154,9 +154,9 @@ public final class AdminAddInstructorLogic {
     /**
      * Create and put documents for the demo data into the Index for use in App Engine's Search API.
      */
-    private void createAndPutDocuments(AdminHomePageData pageData, String courseId) {
+    private void createAndPutDocuments(String courseId, String instructorEmail) {
         List<FeedbackResponseCommentAttributes> frComments =
-                frcLogic.getFeedbackResponseCommentsForGiver(courseId, pageData.instructorEmail);
+                frcLogic.getFeedbackResponseCommentsForGiver(courseId, instructorEmail);
         List<StudentAttributes> students = studentsLogic.getStudentsForCourse(courseId);
         List<InstructorAttributes> instructors = instructorsLogic.getInstructorsForCourse(courseId);
 
