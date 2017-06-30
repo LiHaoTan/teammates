@@ -1,5 +1,12 @@
 package teammates.logic.api;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.imsglobal.lti.launch.LtiOauthVerifier;
+import org.imsglobal.lti.launch.LtiVerificationException;
+import org.imsglobal.lti.launch.LtiVerificationResult;
+import org.imsglobal.lti.launch.LtiVerifier;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -9,6 +16,7 @@ import teammates.common.datatransfer.attributes.AccountAttributes;
 import teammates.common.datatransfer.attributes.CourseAttributes;
 import teammates.common.datatransfer.attributes.FeedbackSessionAttributes;
 import teammates.common.datatransfer.attributes.InstructorAttributes;
+import teammates.common.datatransfer.attributes.LtiOAuthCredentialAttributes;
 import teammates.common.datatransfer.attributes.StudentAttributes;
 import teammates.common.exception.FeedbackSessionNotVisibleException;
 import teammates.common.exception.UnauthorizedAccessException;
@@ -17,6 +25,7 @@ import teammates.common.util.Const;
 import teammates.logic.core.AccountsLogic;
 import teammates.logic.core.InstructorsLogic;
 import teammates.logic.core.StudentsLogic;
+import teammates.storage.api.LtiOAuthCredentialDb;
 
 /**
  * Provides access control mechanisms.
@@ -97,6 +106,39 @@ public class GateKeeper {
 
         throw new UnauthorizedAccessException("User " + getCurrentGoogleUser().getNickname()
                                               + " does not have admin privilleges");
+    }
+
+    /**
+     * Verifies that the LTI credentials is correct.
+     */
+    public LtiVerificationResult verifyOAuth(HttpServletRequest req) {
+        LtiVerifier ltiVerifier = new LtiOauthVerifier();
+        String key = req.getParameter("oauth_consumer_key");
+
+        if (key == null) {
+            return null;
+        }
+
+        final LtiOAuthCredentialDb ltiOAuthCredentialDb = new LtiOAuthCredentialDb();
+        final LtiOAuthCredentialAttributes credential = ltiOAuthCredentialDb.getCredential(key);
+        if (credential == null) {
+            return null;
+        }
+
+        String secret = credential.getConsumerSecret();
+
+        LtiVerificationResult ltiResult;
+        try {
+            ltiResult = ltiVerifier.verify(req, secret);
+            //log.info("LTI status: " + ltiResult.getSuccess());
+            //log.info("Error: " + ltiResult.getError() + " Message: " + ltiResult.getMessage());
+            if (!ltiResult.getSuccess()) {
+                throw new UnauthorizedAccessException(ltiResult.getError().toString());
+            }
+            return ltiResult;
+        } catch (LtiVerificationException e) {
+            throw new UnauthorizedAccessException(e.getMessage());
+        }
     }
 
     /**

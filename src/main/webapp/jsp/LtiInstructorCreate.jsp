@@ -1,46 +1,57 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="t" %>
-<%@ taglib tagdir="/WEB-INF/tags/admin" prefix="ta" %>
-<%@ taglib tagdir="/WEB-INF/tags/admin/home" prefix="adminHome" %>
+<%@ taglib tagdir="/WEB-INF/tags/lti" prefix="ltiTag" %>
 
 <c:set var="jsIncludes">
-    <script type="text/javascript" src="/js/adminHome.js"></script>
+  <script type="text/javascript" src="/js/ltiInstructorCreate.js"></script>
 </c:set>
 
-<ta:adminPage bodyTitle="Add New Instructor Test" pageTitle="TEAMMATES - Lti Test" jsIncludes="${jsIncludes}">
-    <div class="well well-plain">
-        <div>
-            <label class="label-control">Adding a Single Instructor</label>
-        </div>
-        <br>
-        <div>
-            <label class="label-control">Short Name:</label>
-            <input class="form-control addInstructorFormControl" type="text" id="instructorShortName" value="${param.name}">
-        </div>
-        <br>
-        <div>
-            <label class="label-control">Name:</label>
-            <input class="form-control addInstructorFormControl" type="text" id="instructorName" value="${param.name}">
-        </div>
-        <br>
-        <div>
-            <label class="label-control">Email: </label>
-            <input class="form-control addInstructorFormControl" type="text" id="instructorEmail" value="${param.email}">
-        </div>
-        <br>
-        <div>
-            <label class="label-control">Institution: </label>
-            <input class="form-control addInstructorFormControl" type="text" id="instructorInstitution" value="${param.institution}">
-        </div>
-        <br>
+<style>
+  .box {
+    max-width: 500px;
+    margin: 0 auto;
+  }
 
-        <div>
-            <!-- to replace onclick -->
-            <button class="btn btn-primary addInstructorFormControl addInstructorBtn" id="btnAddInstructor"
-                    onclick="replacethisandaddsomethingreal">Confirm</button>
-        </div>
-    </div>
+  body {
+    background-color: #eaeff5 !important;
+  }
+</style>
 
-    <t:statusMessage statusMessagesToUser="${data.statusMessagesToUser}" />
-</ta:adminPage>
+<ltiTag:ltiPage bodyTitle="" pageTitle="TEAMMATES - New Instructor">
+  <jsp:useBean id="data" scope="request" type="teammates.ui.pagedata.AdminHomePageData"/>
+  <jsp:useBean id="signedParameters" scope="request" type="java.util.Map"/>
+  <div class="box">
+    <form action="/lti/ltiInstructorAccountAdd" method="post">
+      <div class="overflow-auto alert alert-info">
+        <span class="glyphicon glyphicon-exclamation-sign glyphicon-primary"></span>
+        No account found linked to the LMS. You can register for an account or login if you already have a TEAMMATES account.
+      </div>
+      <%--<t:statusMessage statusMessagesToUser="${data.statusMessagesToUser}"/>--%>
+      <div class="form-group">
+        <label for="name" class="label-control">Name:</label>
+        <input type="text" class="form-control" name="name" id="name" value="${data.instructorName}">
+      </div>
+      <div class="form-group">
+        <label for="email" class="label-control">Email: </label>
+        <input type="text" class="form-control" name="email" id="email" value="${data.instructorEmail}">
+      </div>
+      <div class="form-group">
+        <label for="institution" class="label-control">Institution: </label>
+        <input type="text" class="form-control" name="institution" id="institution"
+               value="${data.instructorInstitution}">
+      </div>
+      <c:forEach var="signedParameter" items="${signedParameters}">
+        <input type="hidden" name=
+          <c:out value="${signedParameter.key}"/> value=<c:out value="${signedParameter.value}"/>>
+      </c:forEach>
+
+      <div class="form-group" style="margin:0 auto">
+        <button class="btn btn-primary btn-block" id="btnAddInstructor">Register</button>
+      </div>
+      <div class="text-center form-group">
+        Already have an account? <a href="/login?instructor=Instructor+Login">Login</a>
+      </div>
+    </form>
+  </div>
+</ltiTag:ltiPage>

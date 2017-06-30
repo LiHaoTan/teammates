@@ -52,7 +52,7 @@ public final class AdminAddInstructorLogic {
      * Imports Demo course to new instructor.
      * @return the ID of Demo course
      */
-    public String createInstructorWithDemoData(String instructorEmail, String instructorName)
+    public String createCourseInstructorWithDemoData(String instructorEmail, String instructorName)
             throws InvalidParametersException, EntityDoesNotExistException {
         String courseId = generateDemoCourseId(instructorEmail);
 
