@@ -8,6 +8,7 @@ import teammates.common.util.Assumption;
 import teammates.common.util.Const;
 import teammates.common.util.Logger;
 import teammates.common.util.StringHelper;
+import teammates.storage.api.LtiAccountDb;
 
 /**
  * This action handles instructors who attempt to join a course after
@@ -56,6 +57,16 @@ public class InstructorCourseJoinAuthenticatedAction extends Action {
             statusToAdmin = joinedCourseMsg.toString();
         } else {
             statusToAdmin += "<br><br>" + joinedCourseMsg.toString();
+        }
+
+        LtiAccountDb ltiAccountDb = new LtiAccountDb();
+
+        final String accessType = (String) session.getAttribute("access_type");
+        if ("lti".equals(accessType)) {
+            if (session.getAttribute("ltiGoogleId") == null) {
+                session.setAttribute("ltiGoogleId", account.googleId);
+                ltiAccountDb.updateAccountWithGoogleId((String) session.getAttribute("user_id"), account.googleId);
+            }
         }
 
         /* Create redirection to instructor's homepage */
