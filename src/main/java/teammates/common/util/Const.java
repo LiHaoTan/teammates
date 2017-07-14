@@ -201,7 +201,8 @@ public final class Const {
                         ActionURIs.STUDENT_FEEDBACK_RESULTS_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_SAVE,
-                        ActionURIs.ERROR_FEEDBACK_SUBMIT));
+                        ActionURIs.ERROR_FEEDBACK_SUBMIT,
+                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD));
 
         public static final List<String> PAGES_ACCESSIBLE_WITHOUT_REGISTRATION = Collections.unmodifiableList(
                 Arrays.asList(
