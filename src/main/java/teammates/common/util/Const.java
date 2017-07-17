@@ -1004,6 +1004,7 @@ public final class Const {
         public static final String PUBLIC_EMAIL_FILE_SERVE = "/public/publicEmailImageServe";
         public static final String ADMIN_STUDENT_GOOGLE_ID_RESET = "/admin/adminStudentGoogleIdReset";
 
+        public static final String LTI_LAUNCH = "/lti/launch";
         public static final String LTI_INSTRUCTOR_ACCOUNT_ADD = "/lti/ltiInstructorAccountAdd";
 
         public static final String AUTOMATED_LOG_COMPILATION = "/auto/compileLogs";

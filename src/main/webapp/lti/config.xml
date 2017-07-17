@@ -5,7 +5,7 @@
         xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0p1.xsd http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
     <blti:title>teammates</blti:title>
-    <blti:launch_url>https://teammates-lihaotan.appspot.com/lti</blti:launch_url>
+    <blti:launch_url>https://teammates-lihaotan.appspot.com/lti/launch</blti:launch_url>
     <blti:icon>http://www.example.com/icon.png</blti:icon>
     <blti:custom>
         <lticm:property name="custom_password">sherbert lemon</lticm:property>
@@ -24,8 +24,8 @@
         </lticm:options>
         <lticm:options name="course_navigation">
             <lticm:property name="enabled">true</lticm:property>
-            <lticm:property name="url">http://www.example.com/unforgivables/1</lticm:property>
-            <lticm:property name="text">Avada Kedavra</lticm:property>
+            <lticm:property name="url">https://teammates-lihaotan.appspot.com/lti/launch</lticm:property>
+            <lticm:property name="text">TEAMMATES</lticm:property>
             <lticm:property name="visibility">public</lticm:property>
         </lticm:options>
     </blti:extensions>
