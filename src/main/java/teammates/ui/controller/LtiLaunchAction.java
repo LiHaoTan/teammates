@@ -2,6 +2,7 @@ package teammates.ui.controller;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -88,31 +89,28 @@ public class LtiLaunchAction extends Action {
 
         request.getSession().setAttribute("access_type", "lti");
 
-        for (String role : ltiLaunchResult.getUser().getRoles()) {
-            log.info("User role: " + role);
-            if (isInstructorRole(role)) {
-                log.info("INSTRUCTOR FOUND!");
-                String userId = ltiLaunchResult.getUser().getId();
+        if (hasInstructorRole(ltiLaunchResult.getUser().getRoles())) {
+            log.info("INSTRUCTOR FOUND!");
+            String userId = ltiLaunchResult.getUser().getId();
 
-                request.getSession().setAttribute("role", "instructor");
-                request.getSession().setAttribute("user_id", userId);
+            request.getSession().setAttribute("role", "instructor");
+            request.getSession().setAttribute("user_id", userId);
 
-                LtiAccountDb ltiAccountDb = new LtiAccountDb();
-                LtiAccountAttributes ltiAccountAttributes = ltiAccountDb.getAccount(userId);
-                if (ltiAccountAttributes == null) {
-                    try {
-                        ltiAccountDb.createAccount(new LtiAccountAttributes(userId));
-                    } catch (InvalidParametersException | EntityAlreadyExistsException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return createInstructorAccount(request);
-                } else if (ltiAccountAttributes.getGoogleId() != null) {
-                    return createRedirectResult(Const.ActionURIs.INSTRUCTOR_HOME_PAGE);
-                } else if (ltiAccountAttributes.getRegkey() != null) {
-                    return reconfirmInstructorDetails(request, ltiAccountAttributes);
-                } else {
-                    return createInstructorAccount(request);
+            LtiAccountDb ltiAccountDb = new LtiAccountDb();
+            LtiAccountAttributes ltiAccountAttributes = ltiAccountDb.getAccount(userId);
+            if (ltiAccountAttributes == null) {
+                try {
+                    ltiAccountDb.createAccount(new LtiAccountAttributes(userId));
+                } catch (InvalidParametersException | EntityAlreadyExistsException e) {
+                    throw new RuntimeException(e);
                 }
+                return createInstructorAccount(request);
+            } else if (ltiAccountAttributes.getGoogleId() != null) {
+                return createRedirectResult(Const.ActionURIs.INSTRUCTOR_HOME_PAGE);
+            } else if (ltiAccountAttributes.getRegkey() != null) {
+                return reconfirmInstructorDetails(request, ltiAccountAttributes);
+            } else {
+                return createInstructorAccount(request);
             }
         }
         return createNotInstructorErrorPageResult(ltiLaunchResult);
@@ -181,17 +179,23 @@ public class LtiLaunchAction extends Action {
         return createShowPageResult("/jsp/LtiErrorPage.jsp", new PageData(account, sessionToken));
     }
 
-    private boolean isInstructorRole(String role) {
-        return CONTEXT_ROLE_INSTRUCTOR_HANDLE.equals(role) || CONTEXT_ROLE_INSTRUCTOR_URN.equals(role)
-                || CONTEXT_ROLE_LEARNER_INSTRUCTOR_HANDLE.equals(role) || CONTEXT_ROLE_LEARNER_INSTRUCTOR_URN.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_PRIMARY_INSTRUCTOR_HANDLE.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_PRIMARY_INSTRUCTOR_URN.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_LECTURER_HANDLE.equals(role) || CONTEXT_ROLE_INSTRUCTOR_LECTURER_URN.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_GUEST_INSTRUCTOR_HANDLE.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_GUEST_INSTRUCTOR_URN.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_EXTERNAL_INSTRUCTOR_HANDLE.equals(role)
-                || CONTEXT_ROLE_INSTRUCTOR_EXTERNAL_INSTRUCTOR_URN.equals(role)
-                || INSTITUTION_ROLE_INSTRUCTOR_URN.equals(role);
+    private boolean hasInstructorRole(List<String> roles) {
+        for (String role : roles) {
+            log.info("User role: " + role);
+            if (CONTEXT_ROLE_INSTRUCTOR_HANDLE.equals(role) || CONTEXT_ROLE_INSTRUCTOR_URN.equals(role)
+                    || CONTEXT_ROLE_LEARNER_INSTRUCTOR_HANDLE.equals(role) || CONTEXT_ROLE_LEARNER_INSTRUCTOR_URN.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_PRIMARY_INSTRUCTOR_HANDLE.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_PRIMARY_INSTRUCTOR_URN.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_LECTURER_HANDLE.equals(role) || CONTEXT_ROLE_INSTRUCTOR_LECTURER_URN.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_GUEST_INSTRUCTOR_HANDLE.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_GUEST_INSTRUCTOR_URN.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_EXTERNAL_INSTRUCTOR_HANDLE.equals(role)
+                    || CONTEXT_ROLE_INSTRUCTOR_EXTERNAL_INSTRUCTOR_URN.equals(role)
+                    || INSTITUTION_ROLE_INSTRUCTOR_URN.equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ShowPageResult reconfirmInstructorDetails(HttpServletRequest req, LtiAccountAttributes ltiAccountAttributes) {
