@@ -24,12 +24,9 @@ public class LtiAccountDb extends EntitiesDb<LtiAccount, LtiAccountAttributes> {
      * Preconditions:
      * <br> * {@code ltiAccountAttributes} is not null and has valid data.
      */
-    public void createAccount(LtiAccountAttributes ltiAccountAttributes) throws InvalidParametersException {
-        try {
-            createEntity(ltiAccountAttributes);
-        } catch (EntityAlreadyExistsException e) {
-            throw new InvalidParametersException("Credential already exists!");
-        }
+    public void createAccount(LtiAccountAttributes ltiAccountAttributes)
+            throws InvalidParametersException, EntityAlreadyExistsException {
+        createEntity(ltiAccountAttributes);
     }
 
     /**

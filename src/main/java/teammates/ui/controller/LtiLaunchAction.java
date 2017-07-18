@@ -18,6 +18,7 @@ import org.imsglobal.lti.launch.LtiVerifier;
 import teammates.common.datatransfer.attributes.InstructorAttributes;
 import teammates.common.datatransfer.attributes.LtiAccountAttributes;
 import teammates.common.datatransfer.attributes.LtiOAuthCredentialAttributes;
+import teammates.common.exception.EntityAlreadyExistsException;
 import teammates.common.exception.InvalidParametersException;
 import teammates.common.exception.LtiRequiredCredentialsNotFoundException;
 import teammates.common.exception.UnauthorizedAccessException;
@@ -101,9 +102,8 @@ public class LtiLaunchAction extends Action {
                 if (ltiAccountAttributes == null) {
                     try {
                         ltiAccountDb.createAccount(new LtiAccountAttributes(userId));
-                    } catch (InvalidParametersException e) {
-                        log.severe("Can't create LtiAccount");
-                        throw new UnauthorizedAccessException("Invalid request LTI OAuth");
+                    } catch (InvalidParametersException | EntityAlreadyExistsException e) {
+                        throw new RuntimeException(e);
                     }
                     return createInstructorAccount(request);
                 } else if (ltiAccountAttributes.getGoogleId() != null) {
