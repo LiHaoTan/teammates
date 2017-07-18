@@ -2,8 +2,6 @@ package teammates.ui.controller;
 
 import java.util.List;
 
-import org.imsglobal.lti.launch.LtiVerificationResult;
-
 import teammates.common.datatransfer.attributes.InstructorAttributes;
 import teammates.common.datatransfer.attributes.LtiAccountAttributes;
 import teammates.common.exception.EntityDoesNotExistException;
@@ -30,7 +28,8 @@ public class LtiInstructorAccountAddAction extends Action {
 
     @Override
     protected ActionResult execute() {
-        final LtiVerificationResult ltiVerificationResult = gateKeeper.verifyOAuth(request);
+        // TODO maybe to remove
+        gateKeeper.verifyLtiLaunchRequest(request);
 
         final String userId = (String) session.getAttribute("user_id");
         if (userId == null) {
