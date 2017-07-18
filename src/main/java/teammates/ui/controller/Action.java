@@ -247,6 +247,10 @@ public abstract class Action {
             return null;
         }
 
+        if (getAccessType() == AccessType.LTI) {
+            return null;
+        }
+
         AccountAttributes loggedInUser = null;
 
         String email = getRequestParamValue(Const.ParamsNames.STUDENT_EMAIL);
@@ -338,7 +342,26 @@ public abstract class Action {
         return !Const.SystemParams.LEGACY_PAGES_WITH_REDUCED_SECURITY.contains(request.getRequestURI());
     }
 
+    public enum AccessType {
+        /**
+         * Access Type of Google Login TODO.
+         */
+        GOOGLE_LOGIN,
+        /**
+         * Access Type of LTI TODO.
+         */
+        LTI
+    }
+
+    protected AccessType getAccessType() {
+        return AccessType.GOOGLE_LOGIN;
+    }
+
     private boolean doesUserNeedToLogin(UserType currentUser) {
+        if (getAccessType() == AccessType.LTI) {
+            return false;
+        }
+
         boolean isGoogleLoginRequired =
                 !Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN.contains(request.getRequestURI());
         boolean isUserLoggedIn = currentUser != null;
@@ -353,6 +376,10 @@ public abstract class Action {
     }
 
     protected AccountAttributes authenticateAndGetNominalUser(UserType loggedInUserType) {
+        if (getAccessType() == AccessType.LTI) {
+            return null;
+        }
+
         String paramRequestedUserId = request.getParameter(Const.ParamsNames.USER_ID);
 
         AccountAttributes account = null;
