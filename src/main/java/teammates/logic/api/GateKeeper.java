@@ -2,6 +2,7 @@ package teammates.logic.api;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.imsglobal.lti.launch.LtiLaunch;
 import org.imsglobal.lti.launch.LtiOauthVerifier;
 import org.imsglobal.lti.launch.LtiVerificationException;
 import org.imsglobal.lti.launch.LtiVerificationResult;
@@ -109,36 +110,37 @@ public class GateKeeper {
     }
 
     /**
-     * Verifies that the LTI credentials is correct.
+     * Returns a {@link LtiLaunch} if the LTI launch request is valid.
      */
-    public LtiVerificationResult verifyOAuth(HttpServletRequest req) {
+    public LtiLaunch verifyLtiLaunchRequest(HttpServletRequest request) {
         LtiVerifier ltiVerifier = new LtiOauthVerifier();
-        String key = req.getParameter("oauth_consumer_key");
+        String oAuthConsumerKey = request.getParameter("oauth_consumer_key");
 
-        if (key == null) {
-            return null;
+        if (oAuthConsumerKey == null) {
+            throw new UnauthorizedAccessException("Required post parameter oauth_consumer_key not found for"
+                    + "LTI launch request");
         }
 
+        // TODO maybe create a LtiLogic
         final LtiOAuthCredentialDb ltiOAuthCredentialDb = new LtiOAuthCredentialDb();
-        final LtiOAuthCredentialAttributes credential = ltiOAuthCredentialDb.getCredential(key);
+        final LtiOAuthCredentialAttributes credential = ltiOAuthCredentialDb.getCredential(oAuthConsumerKey);
         if (credential == null) {
-            return null;
+            throw new UnauthorizedAccessException("No consumer secret for the parameter oauth_consumer_key is "
+                    + "found in the datastore.");
         }
-
-        String secret = credential.getConsumerSecret();
 
         LtiVerificationResult ltiResult;
         try {
-            ltiResult = ltiVerifier.verify(req, secret);
-            //log.info("LTI status: " + ltiResult.getSuccess());
-            //log.info("Error: " + ltiResult.getError() + " Message: " + ltiResult.getMessage());
-            if (!ltiResult.getSuccess()) {
-                throw new UnauthorizedAccessException(ltiResult.getError().toString());
-            }
-            return ltiResult;
+            ltiResult = ltiVerifier.verify(request, credential.getConsumerSecret());
         } catch (LtiVerificationException e) {
             throw new UnauthorizedAccessException(e.getMessage());
         }
+
+        if (!ltiResult.getSuccess()) {
+            throw new UnauthorizedAccessException(ltiResult.getError().toString());
+        }
+
+        return ltiResult.getLtiLaunchResult();
     }
 
     /**

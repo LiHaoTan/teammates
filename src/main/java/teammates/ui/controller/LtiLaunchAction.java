@@ -76,21 +76,8 @@ public class LtiLaunchAction extends Action {
     protected ActionResult execute() {
         logParameters();
 
-        // move all these into gatekeeper
-        LtiVerificationResult verificationResult;
-        try {
-            verificationResult = verifyOAuth(request);
-        } catch (LtiRequiredCredentialsNotFoundException | LtiVerificationException e) {
-            throw new UnauthorizedAccessException(e.getMessage());
-        }
+        final LtiLaunch ltiLaunchResult = gateKeeper.verifyLtiLaunchRequest(request);
 
-        if (!verificationResult.getSuccess()) {
-            log.warning("Invalid request LTI OAuth");
-            throw new UnauthorizedAccessException("Invalid request LTI OAuth");
-        }
-        // end here
-
-        final LtiLaunch ltiLaunchResult = verificationResult.getLtiLaunchResult();
         if (ltiLaunchResult.getUser().getId() == null || ltiLaunchResult.getUser().getRoles().size() == 0) {
             return createCannotIdentifyUserErrorPageWithLogResult(ltiLaunchResult);
         }
