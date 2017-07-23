@@ -9,20 +9,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.imsglobal.lti.launch.LtiLaunch;
 import org.imsglobal.lti.launch.LtiOauthSigner;
-import org.imsglobal.lti.launch.LtiOauthVerifier;
 import org.imsglobal.lti.launch.LtiSigner;
 import org.imsglobal.lti.launch.LtiSigningException;
-import org.imsglobal.lti.launch.LtiVerificationException;
-import org.imsglobal.lti.launch.LtiVerificationResult;
-import org.imsglobal.lti.launch.LtiVerifier;
 
 import teammates.common.datatransfer.attributes.InstructorAttributes;
 import teammates.common.datatransfer.attributes.LtiAccountAttributes;
 import teammates.common.datatransfer.attributes.LtiOAuthCredentialAttributes;
 import teammates.common.exception.EntityAlreadyExistsException;
 import teammates.common.exception.InvalidParametersException;
-import teammates.common.exception.LtiRequiredCredentialsNotFoundException;
-import teammates.common.exception.UnauthorizedAccessException;
 import teammates.common.util.Config;
 import teammates.common.util.Const;
 import teammates.common.util.Logger;
@@ -289,30 +283,6 @@ public class LtiLaunchAction extends Action {
         // TODO add token to post request
 
         return createShowPageResult(retryUrl, data);
-    }
-
-    private LtiVerificationResult verifyOAuth(HttpServletRequest req)
-            throws LtiRequiredCredentialsNotFoundException, LtiVerificationException {
-        LtiVerifier ltiVerifier = new LtiOauthVerifier();
-        String oAuthConsumerKey = req.getParameter("oauth_consumer_key");
-
-        if (oAuthConsumerKey == null) {
-            throw new LtiRequiredCredentialsNotFoundException("Required post parameter oauth_consumer_key not found");
-        }
-
-        final LtiOAuthCredentialDb ltiOAuthCredentialDb = new LtiOAuthCredentialDb();
-        final LtiOAuthCredentialAttributes credential = ltiOAuthCredentialDb.getCredential(oAuthConsumerKey);
-        if (credential == null) {
-            throw new LtiRequiredCredentialsNotFoundException("No consumer secret for the parameter oauth_consumer_key is "
-                    + "found in the datastore");
-        }
-
-        String secret = credential.getConsumerSecret();
-
-        LtiVerificationResult ltiResult = ltiVerifier.verify(req, secret);
-        log.info("LTI status: " + ltiResult.getSuccess());
-        log.info("Error: " + ltiResult.getError() + " Message: " + ltiResult.getMessage());
-        return ltiResult;
     }
 
     @SuppressWarnings("unchecked")

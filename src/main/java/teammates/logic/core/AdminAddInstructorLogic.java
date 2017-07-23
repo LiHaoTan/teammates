@@ -158,13 +158,7 @@ public final class AdminAddInstructorLogic {
         // it?
         BackDoorLogic backDoorLogic = new BackDoorLogic();
 
-        try {
-            backDoorLogic.persistDataBundle(dataBundle);
-        } catch (EntityDoesNotExistException e) {
-            ThreadHelper.waitFor(Config.PERSISTENCE_CHECK_DURATION);
-            backDoorLogic.persistDataBundle(dataBundle);
-            log.warning("Data Persistence was Checked Twice in This Request");
-        }
+        backDoorLogic.persistDataBundle(dataBundle);
     }
 
     /**

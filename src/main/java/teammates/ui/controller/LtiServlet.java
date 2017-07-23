@@ -27,6 +27,7 @@ import org.imsglobal.pox.IMSPOXRequest;
 import teammates.common.datatransfer.attributes.InstructorAttributes;
 import teammates.common.datatransfer.attributes.LtiAccountAttributes;
 import teammates.common.datatransfer.attributes.LtiOAuthCredentialAttributes;
+import teammates.common.exception.EntityAlreadyExistsException;
 import teammates.common.exception.InvalidParametersException;
 import teammates.common.util.Config;
 import teammates.common.util.Const;
@@ -134,6 +135,8 @@ public class LtiServlet extends HttpServlet {
                     } catch (InvalidParametersException e) {
                         log.severe("Can't create LtiAccount");
                         resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    } catch (EntityAlreadyExistsException e) {
+                        e.printStackTrace();
                     }
                     createInstructorAccount(req, resp);
                 } else if (ltiAccountAttributes.getGoogleId() != null) {

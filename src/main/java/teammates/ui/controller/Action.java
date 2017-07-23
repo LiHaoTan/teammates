@@ -1,5 +1,6 @@
 package teammates.ui.controller;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -643,6 +644,13 @@ public abstract class Action {
         return new AjaxResult(account,
                               statusToUser,
                               pageData, false);
+    }
+
+    /**
+     * Generates a {@link XmlResult} with the XML string.
+     */
+    XmlResult createXmlResult(String xmlString) {
+        return new XmlResult("", account, statusToUser, xmlString);
     }
 
     protected boolean isJoinedCourse(String courseId) {
