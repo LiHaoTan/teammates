@@ -204,7 +204,8 @@ public final class Const {
                         ActionURIs.STUDENT_FEEDBACK_RESULTS_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_SAVE,
-                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD));
+                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD,
+                        ActionURIs.LTI_LAUNCH_CONFIG));
 
         public static final List<String> PAGES_ACCESSIBLE_WITHOUT_REGISTRATION = Collections.unmodifiableList(
                 Arrays.asList(
@@ -1005,6 +1006,7 @@ public final class Const {
         public static final String ADMIN_STUDENT_GOOGLE_ID_RESET = "/admin/adminStudentGoogleIdReset";
 
         public static final String LTI_LAUNCH = "/lti/launch";
+        public static final String LTI_LAUNCH_CONFIG = "/lti/launchConfig";
         public static final String LTI_INSTRUCTOR_ACCOUNT_ADD = "/lti/ltiInstructorAccountAdd";
 
         public static final String AUTOMATED_LOG_COMPILATION = "/auto/compileLogs";
