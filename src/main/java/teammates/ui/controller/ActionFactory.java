@@ -51,6 +51,7 @@ public class ActionFactory {
         map(ADMIN_EMAIL_LOG_PAGE, AdminEmailLogPageAction.class);
 
         map(LTI_LAUNCH, LtiLaunchAction.class);
+        map(LTI_LAUNCH_CONFIG, LtiLaunchConfigAction.class);
         map(LTI_INSTRUCTOR_ACCOUNT_ADD, LtiInstructorAccountAddAction.class);
 
         map(INSTRUCTOR_COURSES_PAGE, InstructorCoursesPageAction.class);

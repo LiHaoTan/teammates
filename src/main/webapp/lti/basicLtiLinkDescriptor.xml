@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- It is to be noted that the `blti` namespace uses `imsbasiclti_v1p0p1.xsd` instead of `imsbasiclti_v1p0.xsd` as
+reflected in IMS's LTI implementation guide. This will allow support for multiple sets of extensions in a single basic LTI
+descriptor.
+ -->
+<cartridge_basiclti_link
+        xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
+        xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
+        xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0"
+        xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd
+        http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0p1.xsd
+        http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd
+        http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
+    <blti:title>teammates</blti:title>
+    <blti:description>Student peer evaluations/feedback, shareable instructor comments, and more...</blti:description>
+    <blti:extensions platform="canvas.instructure.com">
+        <lticm:property name="tool_id">teammates</lticm:property>
+        <lticm:property name="privacy_level">public</lticm:property>
+        <!-- options is not a legal element according to the original XSD. However, it is required by Canvas so the XSD has
+        been manually extended to support the element. -->
+        <lticm:options name="course_navigation">
+            <lticm:property name="enabled">true</lticm:property>
+            <lticm:property name="url">To be dynamically replaced with the TEAMMATES's LTI launch URL</lticm:property>
+            <lticm:property name="text">TEAMMATES</lticm:property>
+            <lticm:property name="visibility">public</lticm:property>
+        </lticm:options>
+    </blti:extensions>
+    <blti:launch_url>To be dynamically replaced with the TEAMMATES's LTI launch URL</blti:launch_url>
+    <blti:icon>To be dynamically replaced with TEAMMATES's icon</blti:icon>
+    <blti:vendor>
+        <lticp:code>nus-oss.github.io</lticp:code>
+        <lticp:name>NUS-OSS</lticp:name>
+        <lticp:description>An initiative to help interested students become OSS developers</lticp:description>
+        <lticp:url>http://www.vendor.com/</lticp:url>
+        <lticp:contact>
+            <lticp:email>damith@comp.nus.edu.sg</lticp:email>
+        </lticp:contact>
+    </blti:vendor>
+</cartridge_basiclti_link>

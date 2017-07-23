@@ -647,6 +647,13 @@ public abstract class Action {
                               pageData, false);
     }
 
+    /**
+     * Generates a {@link XmlResult} with the XML string.
+     */
+    XmlResult createXmlResult(String xmlString) {
+        return new XmlResult("", account, statusToUser, xmlString);
+    }
+
     protected boolean isJoinedCourse(String courseId) {
         if (student == null) {
             return logic.getStudentForGoogleId(courseId, account.googleId) != null;
