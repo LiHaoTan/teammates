@@ -235,7 +235,17 @@ public abstract class Action {
     // These methods are used for user authentication
 
     protected void authenticateUser() {
+        // if user not logged in through google account, this will be null
         UserType currentUser = gateKeeper.getCurrentUser();
+
+        // move from authenticateAndGetActualUser to authenticateUser to simplify logic
+        // because the moment the user needs to login, they need to be redirected to an authentication page
+        // thus there is no need to check for whether the user is valid altogether since it is guaranteed to
+        // be not valid
+        if (doesUserNeedToLogin(currentUser)) {
+            return;
+        }
+
         loggedInUser = authenticateAndGetActualUser(currentUser);
         if (isValidUser()) {
             account = authenticateAndGetNominalUser(currentUser);
@@ -243,20 +253,13 @@ public abstract class Action {
     }
 
     protected AccountAttributes authenticateAndGetActualUser(UserType currentUser) {
-        if (doesUserNeedToLogin(currentUser)) {
-            return null;
-        }
-
-        if (getAccessType() == AccessType.LTI) {
-            return null;
-        }
-
-        AccountAttributes loggedInUser = null;
+        AccountAttributes loggedInUser;
 
         String email = getRequestParamValue(Const.ParamsNames.STUDENT_EMAIL);
         String courseId = getRequestParamValue(Const.ParamsNames.COURSE_ID);
 
         if (currentUser == null) {
+            // not the right use of asserts but still
             Assumption.assertPostParamNotNull(Const.ParamsNames.REGKEY, regkey);
             loggedInUser = authenticateNotLoggedInUser(email, courseId);
         } else {
