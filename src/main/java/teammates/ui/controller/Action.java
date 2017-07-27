@@ -243,6 +243,7 @@ public abstract class Action {
         // thus there is no need to check for whether the user is valid altogether since it is guaranteed to
         // be not valid
         if (doesUserNeedToLogin(currentUser)) {
+            setRedirectPage(gateKeeper.getLoginUrl(requestUrl));
             return;
         }
 
@@ -359,22 +360,41 @@ public abstract class Action {
         return AccessType.GOOGLE_LOGIN;
     }
 
+    @SuppressWarnings("RedundantIfStatement") //  Equivalent to CheckStyle SimplifyBooleanReturn
     private boolean doesUserNeedToLogin(UserType currentUser) {
-        if (getAccessType() == AccessType.LTI) {
+        if (isUserLoggedIn(currentUser)) {
             return false;
         }
 
-        boolean isGoogleLoginRequired =
-                !Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN.contains(request.getRequestURI());
-        boolean isUserLoggedIn = currentUser != null;
-        boolean hasRegkey = getRegkeyFromRequest() != null;
-
-        if (!isUserLoggedIn && (isGoogleLoginRequired || !hasRegkey)) {
-            setRedirectPage(gateKeeper.getLoginUrl(requestUrl));
+        // CHECKSTYLE.OFF:SimplifyBooleanReturn is not used because the logic will look more complex otherwise
+        if (isCurrentPageAccessibleWithoutGoogleLogin()) {
+            return false;
+        } else if (isCurrentPageAccessibleWithoutGoogleLoginButHasRegKey()) {
+            return false;
+        } else {
             return true;
         }
+        // CHECKSTYLE.ON:SimplifyBooleanReturn
+    }
 
-        return false;
+    // TODO: Possibly make GateKeeper#getCurrentUser not return null if the user is not logged in
+    // TODO: Otherwise this method is require to convey the meaning of null.
+    private boolean isUserLoggedIn(UserType currentUser) {
+        return currentUser != null;
+    }
+
+    // TODO: Consider abstracting the logic of page permissions, currently this causes the constant, and consequently
+    // TODO: the method name also becomes too long
+    private boolean isCurrentPageAccessibleWithoutGoogleLoginButHasRegKey() {
+        return Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN_BUT_REQUIRE_REG_KEY
+                .contains(request.getRequestURI()) && getRegkeyFromRequest() != null;
+    }
+
+    // TODO: another problem with page permissions is that this only checks current page URL and this cannot be reused,
+    // TODO: e.g. this is currently used in StudentCourseJoinAction as well. There is no clean approach for supporting this
+    // TODO: currently so this is not done.
+    private boolean isCurrentPageAccessibleWithoutGoogleLogin() {
+        return Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN.contains(request.getRequestURI());
     }
 
     protected AccountAttributes authenticateAndGetNominalUser(UserType loggedInUserType) {
@@ -461,7 +481,7 @@ public abstract class Action {
     private boolean doesUserNeedRegistration(AccountAttributes user) {
         boolean userNeedsRegistrationForPage =
                 !Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_REGISTRATION.contains(request.getRequestURI())
-                && !Const.SystemParams.PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN.contains(request.getRequestURI());
+                && !isCurrentPageAccessibleWithoutGoogleLoginButHasRegKey();
         boolean userIsNotRegistered = user.createdAt == null;
         return userNeedsRegistrationForPage && userIsNotRegistered;
     }
@@ -510,7 +530,7 @@ public abstract class Action {
         response.isError = isError;
 
         // Set the common parameters for the response
-        if (gateKeeper.getCurrentUser() != null) {
+        if (isUserLoggedIn(gateKeeper.getCurrentUser())) {
             response.responseParams.put(Const.ParamsNames.USER_ID, account.googleId);
         }
 

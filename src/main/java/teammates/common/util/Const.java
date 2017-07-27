@@ -197,13 +197,18 @@ public final class Const {
                         ActionURIs.STUDENT_PROFILE_PICTURE_EDIT,
                         ActionURIs.STUDENT_PROFILE_PICTURE_UPLOAD));
 
-        public static final List<String> PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN = Collections.unmodifiableList(
+        public static final List<String> PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN_BUT_REQUIRE_REG_KEY = Collections.unmodifiableList(
                 Arrays.asList(
                         ActionURIs.STUDENT_COURSE_JOIN,
                         ActionURIs.STUDENT_COURSE_JOIN_NEW,
                         ActionURIs.STUDENT_FEEDBACK_RESULTS_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_SAVE,
+                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD,
+                        ActionURIs.LTI_LAUNCH_CONFIG));
+        
+        public static final List<String> PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN = Collections.unmodifiableList(
+                Arrays.asList(
                         ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD,
                         ActionURIs.LTI_LAUNCH_CONFIG));
 
