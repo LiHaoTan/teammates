@@ -1,6 +1,5 @@
 package teammates.test.cases.action;
 
-import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
 import teammates.common.datatransfer.attributes.CourseAttributes;
@@ -61,7 +60,7 @@ public class InstructorCourseStudentListDownloadActionTest extends BaseActionTes
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), fileContent);
+        assertEquals(String.join(Const.EOL, expected), fileContent);
         assertEquals("", r.getStatusMessage());
 
         ______TS("Typical case: student list downloaded successfully with student last name specified within braces");
@@ -94,7 +93,7 @@ public class InstructorCourseStudentListDownloadActionTest extends BaseActionTes
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), fileContent);
+        assertEquals(String.join(Const.EOL, expected), fileContent);
         assertEquals("", r.getStatusMessage());
 
         removeAndRestoreTypicalDataBundle();
@@ -129,7 +128,7 @@ public class InstructorCourseStudentListDownloadActionTest extends BaseActionTes
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), fileContent);
+        assertEquals(String.join(Const.EOL, expected), fileContent);
         assertEquals("", r.getStatusMessage());
 
     }

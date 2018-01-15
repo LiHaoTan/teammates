@@ -1,7 +1,11 @@
 package teammates.test.cases.action;
 
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Arrays;
+import java.util.List;
+
 import org.testng.annotations.Test;
+
+import com.sun.tools.javac.util.ArrayUtils;
 
 import teammates.common.datatransfer.attributes.FeedbackSessionAttributes;
 import teammates.common.datatransfer.attributes.InstructorAttributes;
@@ -113,10 +117,12 @@ public class InstructorFeedbackEditSaveActionTest extends BaseActionTest {
                          instructor1ofCourse1.courseId, session.getFeedbackSessionName(), 1);
 
         //remove grace period (first) and then time zone
-        params = ArrayUtils.remove(params, 26);
-        params = ArrayUtils.remove(params, 26);
-        params = ArrayUtils.remove(params, 24);
-        params = ArrayUtils.remove(params, 24);
+        final List<String> paramsList = Arrays.asList(params);
+        paramsList.remove(26);
+        paramsList.remove(26);
+        paramsList.remove(24);
+        paramsList.remove(24);
+        params = paramsList.toArray(new String[0]);
 
         a = getAction(params);
         ar = getAjaxResult(a);

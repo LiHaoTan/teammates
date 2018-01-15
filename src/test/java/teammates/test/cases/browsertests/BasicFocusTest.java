@@ -9,26 +9,29 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import com.thoughtworks.selenium.webdriven.JavascriptLibrary;
 
 import teammates.test.driver.TestProperties;
 
 public class BasicFocusTest {
 
     public static void main(String[] args) {
-        System.setProperty("webdriver.firefox.bin", TestProperties.FIREFOX_PATH);
+        System.setProperty("webdriver.gecko.driver", TestProperties.FIREFOX_PATH);
         FirefoxProfile profile = new FirefoxProfile();
-        profile.setEnableNativeEvents(true);
         // whether focusmanager.testmode is enabled or not select onchange is guaranteed to succeed
         // if using Selenium select
-        profile.setPreference("focusmanager.testmode", true);
+        //profile.setPreference("focusmanager.testmode", false);
 
-        WebDriver driver = new FirefoxDriver(profile);
+        final FirefoxOptions options = new FirefoxOptions();
+        options.setLogLevel(FirefoxDriverLogLevel.TRACE);
+        options.setProfile(profile);
+
+        WebDriver driver = new FirefoxDriver(options);
         driver.manage().window().maximize();
 
         driver.get("https://jsfiddle.net/LiHaoTan/pn8ozt80/");
@@ -70,14 +73,15 @@ public class BasicFocusTest {
 
     public static void manualTriggerChangeEvent(WebDriver driver, WebElement textInputElement) {
         // manually trigger change event
-        JavascriptLibrary javascript = new JavascriptLibrary();
-        javascript.callEmbeddedSelenium(driver, "triggerEvent", textInputElement, "change");
+        JavascriptExecutor javascriptExecutor = (JavascriptExecutor) driver;
+        javascriptExecutor.executeScript("arguments[0].dispatchEvent(new Event('change'));", textInputElement);
+
     }
 
     public static void alternativeBlur2(WebDriver driver, WebElement textInputElement) {
         // alternative 2 to blur element
-        JavascriptLibrary javascript = new JavascriptLibrary();
-        javascript.callEmbeddedSelenium(driver, "triggerEvent", textInputElement, "blur");
+        JavascriptExecutor javascriptExecutor = (JavascriptExecutor) driver;
+        javascriptExecutor.executeScript("arguments[0].dispatchEvent(new Event('blur'));", textInputElement);
     }
 
     public static void alternativeBlur1(WebDriver driver) {

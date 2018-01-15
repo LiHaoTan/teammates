@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
 import teammates.common.datatransfer.CourseDetailsBundle;
@@ -629,7 +628,7 @@ public class CoursesLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expectedCsvString, EOL), csvString);
+        assertEquals(String.join(EOL, expectedCsvString), csvString);
 
         ______TS("Typical case: course without sections");
 
@@ -652,7 +651,7 @@ public class CoursesLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expectedCsvString, EOL), csvString);
+        assertEquals(String.join(EOL, expectedCsvString), csvString);
 
         ______TS("Typical case: course with unregistered student");
 
@@ -675,7 +674,7 @@ public class CoursesLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expectedCsvString, EOL), csvString);
+        assertEquals(String.join(EOL, expectedCsvString), csvString);
 
         ______TS("Failure case: non existent instructor");
 

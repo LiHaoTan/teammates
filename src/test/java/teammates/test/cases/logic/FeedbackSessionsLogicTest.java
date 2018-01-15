@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
 import com.google.appengine.api.datastore.Text;
@@ -1208,7 +1207,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("typical case: get all results with unchecked isMissingResponsesShown");
 
@@ -1262,7 +1261,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("typical case: get results for single question");
         final int questionNum = dataBundle.feedbackQuestions.get("qn2InSession1InCourse1").getQuestionNumber();
@@ -1290,7 +1289,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("MCQ results");
 
@@ -1356,7 +1355,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("MSQ results");
 
@@ -1424,7 +1423,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("NUMSCALE results");
 
@@ -1472,7 +1471,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("CONSTSUM results");
 
@@ -1540,7 +1539,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("Instructor without privilege to view responses");
 
@@ -1579,7 +1578,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("CONTRIB results");
 
@@ -1633,7 +1632,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("CONTRIB summary visibility variations");
 
@@ -1682,7 +1681,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         // instructor not allowed to view student responses in section
         session = newDataBundle.feedbackSessions.get("contribSessionInstructorSectionRestricted");
@@ -1721,7 +1720,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("RUBRIC results");
 
@@ -1820,7 +1819,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("RANK results");
 
@@ -1879,7 +1878,7 @@ public class FeedbackSessionsLogicTest extends BaseLogicTest {
                 // CHECKSTYLE.ON:LineLength
         };
 
-        assertEquals(StringUtils.join(expected, Const.EOL), export);
+        assertEquals(String.join(Const.EOL, expected), export);
 
         ______TS("MSQ results without statistics");
 
