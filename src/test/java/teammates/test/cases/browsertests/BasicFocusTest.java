@@ -3,11 +3,13 @@ package teammates.test.cases.browsertests;
 
 import java.util.concurrent.TimeUnit;
 
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -27,7 +29,11 @@ public class BasicFocusTest {
         // if using Selenium select
         //profile.setPreference("focusmanager.testmode", false);
 
+        FirefoxBinary firefoxBinary = new FirefoxBinary();
+        firefoxBinary.addCommandLineOptions("--headless");
+
         final FirefoxOptions options = new FirefoxOptions();
+        options.setBinary(firefoxBinary);
         options.setLogLevel(FirefoxDriverLogLevel.TRACE);
         options.setProfile(profile);
 
@@ -55,6 +61,9 @@ public class BasicFocusTest {
         // If the browser is in focus change event is triggered, otherwise it never triggers even if
         // focusmanger.testmode is set to true
         textInputElement.sendKeys("TESTING!" + Keys.TAB);
+
+        final Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+        System.out.println(alert.getText());
 
         // no matter what other methods used to blur the input element the change event never
         // executes for input text
