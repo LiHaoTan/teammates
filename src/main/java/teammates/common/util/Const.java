@@ -202,8 +202,8 @@ public final class Const {
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_PAGE,
                         ActionURIs.STUDENT_FEEDBACK_SUBMISSION_EDIT_SAVE,
                         ActionURIs.ERROR_FEEDBACK_SUBMIT,
-                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD,
-                        ActionURIs.LTI_LAUNCH_CONFIG));
+                        ActionURIs.LTI_INSTRUCTOR_ACCOUNT_ADD, // TODO: remove
+                        ActionURIs.LTI_LAUNCH_CONFIG)); // TODO: remove
         
         public static final List<String> PAGES_ACCESSIBLE_WITHOUT_GOOGLE_LOGIN = Collections.unmodifiableList(
                 Arrays.asList(

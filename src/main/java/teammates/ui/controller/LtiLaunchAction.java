@@ -96,7 +96,7 @@ public class LtiLaunchAction extends Action {
                 try {
                     ltiAccountDb.createAccount(new LtiAccountAttributes(userId));
                 } catch (InvalidParametersException | EntityAlreadyExistsException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e); // setStatusForException(e);
                 }
                 return createInstructorAccount(request);
             } else if (ltiAccountAttributes.getGoogleId() != null) {
@@ -211,8 +211,12 @@ public class LtiLaunchAction extends Action {
                         new StatusMessage("You have a previous incomplete registration."
                                 + " Please confirm your details again to proceed.", StatusMessageColor.INFO)));
         //req.setAttribute("data", data);
-        req.setAttribute("regkey", ltiAccountAttributes.getRegkey());
+        req.setAttribute("regkey", ltiAccountAttributes.getRegkey()); // Add these to LtiLaunchActionData
         req.setAttribute("joinLink", Const.ActionURIs.INSTRUCTOR_COURSE_JOIN);
+        // Maybe alternatively, Config.getAppUrl(Const.ActionURIs.INSTRUCTOR_COURSE_JOIN)
+        //                .withRegistrationKey(StringHelper.encrypt(instructorRegKey))
+        //                .withInstructorInstitution(instructorInstitution)
+        //                .toAbsoluteString();
 
         return createShowPageResult("/jsp/LtiInstructorConfirmInstitute.jsp", data);
     }

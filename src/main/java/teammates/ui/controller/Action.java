@@ -259,12 +259,15 @@ public abstract class Action {
         String email = getRequestParamValue(Const.ParamsNames.STUDENT_EMAIL);
         String courseId = getRequestParamValue(Const.ParamsNames.COURSE_ID);
 
+        // if not logged in means it's a student
         if (currentUser == null) {
             // not the right use of asserts but still
             Assumption.assertPostParamNotNull(Const.ParamsNames.REGKEY, regkey);
-            loggedInUser = authenticateNotLoggedInUser(email, courseId);
+            loggedInUser = authenticateNotLoggedInUser(email, courseId); // student Account will have email attribute
         } else {
             loggedInUser = logic.getAccount(currentUser.id);
+            // check if it is student, if student and google login does not match, then will redirect
+            // otherwise, if user is logged in but no account in database, create dummy account with google id
             if (doesRegkeyMatchLoggedInUserGoogleId(currentUser.id)) {
                 loggedInUser = createDummyAccountIfUserIsUnregistered(currentUser, loggedInUser);
             }
@@ -430,7 +433,7 @@ public abstract class Action {
         account = loggedInUser;
         if (isPersistenceIssue() && isHomePage()) {
             // let the user go through as this is a persistence issue
-        } else if (doesUserNeedRegistration(account) && !loggedInUserType.isAdmin) {
+        } else if (doesUserNeedRegistration(account) && !loggedInUserType.isAdmin) { // TODO: check if LTI logic can change this somehow
             if (regkey != null && student != null) {
                 // TODO: encrypt the email as currently anyone with the regkey can
                 //       get the email because of this redirect:

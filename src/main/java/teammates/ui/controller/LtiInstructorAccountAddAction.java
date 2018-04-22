@@ -47,7 +47,7 @@ public class LtiInstructorAccountAddAction extends Action {
             // TODO just pass the whole data? nah let's not do that
             logic.verifyInputForAdminHomePage(instructorName, instructorInstitution, instructorEmail);
         } catch (InvalidParametersException e) {
-            throw new UnauthorizedAccessException(e.getMessage());
+            throw new UnauthorizedAccessException(e.getMessage()); // TODO: might not be unauthorized access
         }
 
         String courseId;
@@ -55,7 +55,7 @@ public class LtiInstructorAccountAddAction extends Action {
         try {
             courseId = adminAddInstructorLogic.createCourseInstructorWithDemoData(instructorEmail, instructorName);
         } catch (InvalidParametersException | EntityDoesNotExistException e) {
-            throw new UnauthorizedAccessException(e.getMessage());
+            throw new UnauthorizedAccessException(e.getMessage()); // TODO: might not be unauthorized access
         }
 
         // TODO:
@@ -93,8 +93,8 @@ public class LtiInstructorAccountAddAction extends Action {
                 + "<span class=\"bold\">Id: </span>"
                 + "ID will be assigned when the verification link was clicked and confirmed"
                 + "<br>"
-                + "<span class=\"bold\">Email: </span>" + SanitizationHelper.sanitizeForHtmlTag(instructorEmail)
+                + "<span class=\"bold\">Email: </span>" + SanitizationHelper.sanitizeForHtml(instructorEmail)
                 + "<span class=\"bold\">Institution: </span>"
-                + SanitizationHelper.sanitizeForHtmlTag(instructorInstitution);
+                + SanitizationHelper.sanitizeForHtml(instructorInstitution);
     }
 }
